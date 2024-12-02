@@ -1,7 +1,7 @@
 package com.work.utils;
 
 
-import com.work.entity.exception.BusinessException;
+import com.work.exception.BusinessException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
