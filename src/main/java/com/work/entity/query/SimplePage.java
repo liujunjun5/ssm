@@ -1,5 +1,6 @@
-package com.work.entity.po;
+package com.work.entity.query;
 
+import com.work.enums.PageSize;
 
 public class SimplePage {
     private Integer pageNo;
@@ -29,7 +30,7 @@ public class SimplePage {
 
     public void action() {
         if (this.pageSize <= 0) {
-            this.pageSize = 20;
+            this.pageSize = PageSize.SIZE20.getSize();
         }
         if (this.countTotal > 0) {
             this.pageTotal = this.countTotal % this.pageSize == 0 ? this.countTotal / this.pageSize

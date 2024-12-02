@@ -1,8 +1,8 @@
 package com.work.controller;
 
 
-import com.work.entity.enums.ResponseCodeEnum;
 import com.work.entity.vo.ResponseVO;
+import com.work.enums.ResponseCodeEnum;
 
 public class ABaseController {
 

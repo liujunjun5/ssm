@@ -1,7 +1,7 @@
-package com.work.entity.exception;
+package com.work.exception;
 
 
-import com.work.entity.enums.ResponseCodeEnum;
+import com.work.enums.ResponseCodeEnum;
 
 public class BusinessException extends Exception {
     private ResponseCodeEnum codeEnum;

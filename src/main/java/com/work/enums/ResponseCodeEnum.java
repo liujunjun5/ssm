@@ -1,4 +1,4 @@
-package com.work.entity.enums;
+package com.work.enums;
 
 public enum ResponseCodeEnum {
     CODE_200(200, "请求成功"),
