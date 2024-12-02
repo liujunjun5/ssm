@@ -10,13 +10,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class UserController {
-
     @ResponseBody
     @RequestMapping("/test")
     public String test() {
         return "OK";
     }
-
+//262665
 
     @RequestMapping("/toLogin")
     public String toLogin() {
