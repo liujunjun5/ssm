@@ -22,7 +22,7 @@ public class UserController extends ABaseController{
     public ResponseVO test() {
         return getSuccessResponseVO(userInfoService.getByUserId("1"));
     }
-//不是牛俊
+//不是牛俊123
     @RequestMapping("/toLogin")
     public String toLogin() {
         return "login.jsp";
