@@ -1,7 +1,10 @@
 package com.work.controller;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+import com.work.entity.constants.Constants;
 import com.work.entity.po.ProductInfo;
 import com.work.entity.query.ProductInfoQuery;
+import com.work.entity.vo.PaginationResultVO;
 import com.work.entity.vo.ResponseVO;
 import com.work.service.ProductInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,7 @@ public class ProductController extends ABaseController {
             productInfo.setBrandId(Integer.valueOf(brandId));
             productInfo.setProductDescription(description);
             productInfo.setPrice(price);
+            productInfo.setStatus(Constants.TWO);
             productInfo.setCreateTime(new Date());
             productInfo.setLastUpdateTime(new Date());
             productInfoService.add(productInfo);//执行添加
@@ -44,13 +48,11 @@ public class ProductController extends ABaseController {
     }
 
     @GetMapping("/loadProducts")
-    public ResponseVO loadProducts(Integer pageNo){
+    public PaginationResultVO loadProducts(Integer pageNo){
         ProductInfoQuery productInfoQuery = new ProductInfoQuery();
         productInfoQuery.setPageNo(pageNo);
-        productInfoQuery.getPageNo();
-        List<ProductInfo> list = productInfoService.findListByParam(productInfoQuery);
-        System.out.println(list);
-        return getSuccessResponseVO(null);
+        productInfoQuery.setStatus(Constants.ONE);
+        return productInfoService.findByPage(productInfoQuery);
     }
 
     @GetMapping("/getProductByProductId")
@@ -60,7 +62,7 @@ public class ProductController extends ABaseController {
         List<ProductInfo> listProduct = productInfoService.findListByParam(productInfoQuery);//将查询结果放入listProduct
         System.out.println(listProduct);//打印查询结果
         if(!listProduct.isEmpty()){
-            return getSuccessResponseVO("查询成功");
+            return getSuccessResponseVO(listProduct);
         }else {
             return getServerErrorProductResponseVO("不存在该商品id,查询失败");
         }
