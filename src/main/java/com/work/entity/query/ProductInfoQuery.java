@@ -31,7 +31,7 @@ public class ProductInfoQuery extends BaseQuery{
 	private String productDescriptionFuzzy;
 
 	/**
-	 * 分类ID
+	 * 子分类ID
 	 */
 	private Integer categoryId;
 
@@ -69,7 +69,7 @@ public class ProductInfoQuery extends BaseQuery{
 	private String lastUpdateTimeEnd;
 
 	/**
-	 * 商品状态 0:下架 1:上架 2:审核不通过
+	 * 商品状态 0:下架 1:上架 2:审核不通过 3：未审核
 	 */
 	private Integer status;
 
@@ -96,6 +96,11 @@ public class ProductInfoQuery extends BaseQuery{
 	 * 商品评分
 	 */
 	private Integer rating;
+
+	/**
+	 * 分类ID
+	 */
+	private Integer pCategoryId;
 
 	public void setProductIdFuzzy(String productIdFuzzy) {
 		this.productIdFuzzy = productIdFuzzy;
@@ -279,6 +284,14 @@ public class ProductInfoQuery extends BaseQuery{
 
 	public Integer getRating() {
 		return this.rating;
+	}
+
+	public void setPCategoryId(Integer pCategoryId) {
+		this.pCategoryId = pCategoryId;
+	}
+
+	public Integer getPCategoryId() {
+		return this.pCategoryId;
 	}
 
 }
