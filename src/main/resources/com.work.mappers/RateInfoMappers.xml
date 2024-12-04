@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.mappers.RateInfoMappers">
+    <!--实体映射-->
+    <resultMap id="map" type="com.work.entity.po.RateInfo">
+        <!-- 商品ID -->
+        <id column="rate_id" property="rateId"/>
+        <result column="user_id" property="userId"/>
+        <!-- 商品评分 -->
+        <result column="product_id" property="productId"/>
+        <!-- 分类ID -->
+        <result column="rate" property="rate"/>
+    </resultMap>
+    <!-- 根据ProductId查询评分 -->
+    <select id="findRateByProductId" resultType="java.lang.Integer">
+        select rate from rate_info where product_id=#{productId}
+    </select>
+    <insert id="addRateByProductId" parameterType="com.work.entity.po.RateInfo" >
+        INSERT INTO rate_info
+    </insert>
+</mapper>
