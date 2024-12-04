@@ -10,7 +10,7 @@ import java.util.Date;
 
 /**
  * @Description:商品信息
- * @date:2024-12-03
+ * @date:2024-12-04
  * @author: liujun
  */
 public class ProductInfo implements Serializable {
@@ -94,6 +94,11 @@ public class ProductInfo implements Serializable {
 	 */
 	private Integer pCategoryId;
 
+	/**
+	 * 上传商品的用户
+	 */
+	private String productUser;
+
 
 	public void setProductId(String productId) {
 		this.productId = productId;
@@ -153,6 +158,10 @@ public class ProductInfo implements Serializable {
 
 	public void setPCategoryId(Integer pCategoryId) {
 		this.pCategoryId = pCategoryId;
+	}
+
+	public void setProductUser(String productUser) {
+		this.productUser = productUser;
 	}
 
 	public String getProductId() {
@@ -215,8 +224,12 @@ public class ProductInfo implements Serializable {
 		return this.pCategoryId;
 	}
 
+	public String getProductUser() {
+		return this.productUser;
+	}
+
 	@Override
 	public String toString() {
-		return "商品ID:" + (productId == null ? "null" : productId) + ",商品名称:" + (productName == null ? "null" : productName) + ",商品描述:" + (productDescription == null ? "null" : productDescription) + ",子分类ID:" + (categoryId == null ? "null" : categoryId) + ",品牌ID:" + (brandId == null ? "null" : brandId) + ",商品价格:" + (price == null ? "null" : price) + ",库存数量:" + (stock == null ? "null" : stock) + ",创建时间:" + (createTime == null ? "null" : createTime) + ",最后更新时间:" + (lastUpdateTime == null ? "null" : lastUpdateTime) + ",商品状态 0:下架 1:上架 2:审核不通过 3：未审核:" + (status == null ? "null" : status) + ",商品图片:" + (imageUrl == null ? "null" : imageUrl) + ",商品标签:" + (tags == null ? "null" : tags) + ",销售数量:" + (salesCount == null ? "null" : salesCount) + ",商品评分:" + (rating == null ? "null" : rating) + ",分类ID:" + (pCategoryId == null ? "null" : pCategoryId);
+		return "商品ID:" + (productId == null ? "null" : productId) + ",商品名称:" + (productName == null ? "null" : productName) + ",商品描述:" + (productDescription == null ? "null" : productDescription) + ",子分类ID:" + (categoryId == null ? "null" : categoryId) + ",品牌ID:" + (brandId == null ? "null" : brandId) + ",商品价格:" + (price == null ? "null" : price) + ",库存数量:" + (stock == null ? "null" : stock) + ",创建时间:" + (createTime == null ? "null" : createTime) + ",最后更新时间:" + (lastUpdateTime == null ? "null" : lastUpdateTime) + ",商品状态 0:下架 1:上架 2:审核不通过 3：未审核:" + (status == null ? "null" : status) + ",商品图片:" + (imageUrl == null ? "null" : imageUrl) + ",商品标签:" + (tags == null ? "null" : tags) + ",销售数量:" + (salesCount == null ? "null" : salesCount) + ",商品评分:" + (rating == null ? "null" : rating) + ",分类ID:" + (pCategoryId == null ? "null" : pCategoryId) + ",上传商品的用户:" + (productUser == null ? "null" : productUser);
 	}
 }
