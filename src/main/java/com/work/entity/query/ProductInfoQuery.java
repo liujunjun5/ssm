@@ -1,5 +1,6 @@
 package com.work.entity.query;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -12,6 +13,7 @@ public class ProductInfoQuery extends BaseQuery{
 	/**
 	 * 商品ID
 	 */
+	@NotNull(message = "用户名不能为空")
 	private String productId;
 
 	private String productIdFuzzy;

@@ -1,19 +1,20 @@
 package com.work.controller;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import com.work.entity.constants.Constants;
 import com.work.entity.po.ProductInfo;
 import com.work.entity.query.ProductInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
 import com.work.entity.vo.ResponseVO;
+import com.work.exception.BusinessException;
 import com.work.service.ProductInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -27,8 +28,12 @@ public class ProductController extends ABaseController {
 
     //展示,增删改查
     @PostMapping("/addProduct")
-    public ResponseVO addProduct(String productId,String productCover, String pCategoryId, String productName, String description, BigDecimal price,String brandId) {
+    public ResponseVO addProduct( String productId, String productCover, String pCategoryId, String productName, @Max(100) String description, BigDecimal price, String brandId) throws BusinessException {
+        if (productId==null || productId.isEmpty() ||pCategoryId==null || pCategoryId.isEmpty() || productName==null || productName.isEmpty() || price==null ) {
+            return getServerErrorProductResponseVO("必要信息不能为空");
+        }
         if(getProductByProductId(productId).getCode()!=200){//找不到这个产品才可以添加
+            //TODO 从redis拿取当前用户的信息 获得userId
             ProductInfo productInfo = new ProductInfo();
             productInfo.setProductId(productId);
             productInfo.setPCategoryId(Integer.valueOf(pCategoryId));
@@ -56,7 +61,10 @@ public class ProductController extends ABaseController {
     }
 
     @GetMapping("/getProductByProductId")
-    public ResponseVO getProductByProductId(String productId){
+    public ResponseVO getProductByProductId(String productId) {
+        if (productId==null || productId.isEmpty()) {
+            return getServerErrorProductResponseVO("产品id不能为空");
+        }
         ProductInfoQuery productInfoQuery = new ProductInfoQuery();
         productInfoQuery.setProductId(productId);
         List<ProductInfo> listProduct = productInfoService.findListByParam(productInfoQuery);//将查询结果放入listProduct
@@ -69,8 +77,12 @@ public class ProductController extends ABaseController {
     }
 
     @GetMapping("/delProductByProductId")
-    public ResponseVO delProductByProductId(String productId){
+    public ResponseVO delProductByProductId( String productId) throws BusinessException {
+        if (productId==null || productId.isEmpty()) {
+            return getServerErrorProductResponseVO("必要信息不能为空");
+        }
         if(getProductByProductId(productId).getCode()==200){//找到对应产品后执行删除
+            //TODO判断用户id是否相同
             productInfoService.deleteByProductId(productId);
             return getSuccessResponseVO("删除成功");
         }else {
