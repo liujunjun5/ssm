@@ -10,7 +10,7 @@
 		<result column="product_name" property="productName"/>
 		<!-- 商品描述 -->
 		<result column="product_description" property="productDescription"/>
-		<!-- 分类ID -->
+		<!-- 子分类ID -->
 		<result column="category_id" property="categoryId"/>
 		<!-- 品牌ID -->
 		<result column="brand_id" property="brandId"/>
@@ -22,7 +22,7 @@
 		<result column="create_time" property="createTime"/>
 		<!-- 最后更新时间 -->
 		<result column="last_update_time" property="lastUpdateTime"/>
-		<!-- 商品状态 0:下架 1:上架 2:审核不通过 -->
+		<!-- 商品状态 0:下架 1:上架 2:审核不通过 3：未审核 -->
 		<result column="status" property="status"/>
 		<!-- 商品图片 -->
 		<result column="image_url" property="imageUrl"/>
@@ -32,12 +32,16 @@
 		<result column="sales_count" property="salesCount"/>
 		<!-- 商品评分 -->
 		<result column="rating" property="rating"/>
+		<!-- 分类ID -->
+		<result column="p_category_id" property="pCategoryId"/>
+		<!-- 上传商品的用户 -->
+		<result column="product_user" property="productUser"/>
 
 	</resultMap>
 
 	<!--通用查询列-->
 	<sql id="base_column_list">
-		product_id,product_name,product_description,category_id,brand_id,price,stock,create_time,last_update_time,status,image_url,tags,sales_count,rating
+		product_id,product_name,product_description,category_id,brand_id,price,stock,create_time,last_update_time,status,image_url,tags,sales_count,rating,p_category_id,product_user
 	</sql>
 
 	<!--基础查询条件-->
@@ -85,6 +89,12 @@
 		<if test="query.rating!=null">
 			and rating = #{query.rating}
 		</if>
+		<if test="query.pCategoryId!=null">
+			and p_category_id = #{query.pCategoryId}
+		</if>
+		<if test="query.productUser!=null and query.productUser!=''">
+			and product_user = #{query.productUser}
+		</if>
 	</sql>
 
 	<!--拓展的查询条件-->
@@ -115,6 +125,9 @@
 		</if>
 		<if test="query.tagsFuzzy!=null and query.tagsFuzzy!=''">
 			and tags like concat ('%', #{query.tagsFuzzy}, '%')
+		</if>
+		<if test="query.productUserFuzzy!=null and query.productUserFuzzy!=''">
+			and product_user like concat ('%', #{query.productUserFuzzy}, '%')
 		</if>
 
 	</sql>
@@ -190,6 +203,12 @@
 			<if test="bean.rating != null">
 				rating,
 			</if>
+			<if test="bean.pCategoryId != null">
+				p_category_id,
+			</if>
+			<if test="bean.productUser != null">
+				product_user,
+			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="bean.productId != null">
@@ -233,6 +252,12 @@
 			</if>
 			<if test="bean.rating != null">
 				#{bean.rating},
+			</if>
+			<if test="bean.pCategoryId != null">
+				#{bean.pCategoryId},
+			</if>
+			<if test="bean.productUser != null">
+				#{bean.productUser},
 			</if>
 		</trim>
 	</insert>
@@ -283,6 +308,12 @@
 			<if test="bean.rating != null">
 				rating,
 			</if>
+			<if test="bean.pCategoryId != null">
+				p_category_id,
+			</if>
+			<if test="bean.productUser != null">
+				product_user,
+			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="bean.productId != null">
@@ -327,6 +358,12 @@
 			<if test="bean.rating != null">
 				#{bean.rating},
 			</if>
+			<if test="bean.pCategoryId != null">
+				#{bean.pCategoryId},
+			</if>
+			<if test="bean.productUser != null">
+				#{bean.productUser},
+			</if>
 		</trim>
 		on DUPLICATE key update
 		<trim prefix="" suffix="" suffixOverrides=",">
@@ -369,25 +406,31 @@
 			<if test="bean.rating != null">
 				 rating = VALUES(rating)
 			</if>
+			<if test="bean.pCategoryId != null">
+				 p_category_id = VALUES(p_category_id)
+			</if>
+			<if test="bean.productUser != null">
+				 product_user = VALUES(product_user)
+			</if>
 		</trim>
 	</insert>
 
 	<!-- 批量插入 -->
 	<insert id ="insertBatch" parameterType="com.work.entity.po.ProductInfo">
-		INSERT INTO product_info(product_id,product_name,product_description,category_id,brand_id,price,stock,create_time,last_update_time,status,image_url,tags,sales_count,rating) VALUES
+		INSERT INTO product_info(product_id,product_name,product_description,category_id,brand_id,price,stock,create_time,last_update_time,status,image_url,tags,sales_count,rating,p_category_id,product_user) VALUES
 		<foreach collection="list" item="item" separator=",">
-			(#{item.productId},#{item.productName},#{item.productDescription},#{item.categoryId},#{item.brandId},#{item.price},#{item.stock},#{item.createTime},#{item.lastUpdateTime},#{item.status},#{item.imageUrl},#{item.tags},#{item.salesCount},#{item.rating})
+			(#{item.productId},#{item.productName},#{item.productDescription},#{item.categoryId},#{item.brandId},#{item.price},#{item.stock},#{item.createTime},#{item.lastUpdateTime},#{item.status},#{item.imageUrl},#{item.tags},#{item.salesCount},#{item.rating},#{item.pCategoryId},#{item.productUser})
 		</foreach>
 	</insert>
 
 	<!-- 批量插入（或者更新） -->
 	<insert id ="insertOrUpdateBatch" parameterType="com.work.entity.po.ProductInfo">
-		INSERT INTO product_info(product_id,product_name,product_description,category_id,brand_id,price,stock,create_time,last_update_time,status,image_url,tags,sales_count,rating) VALUES
+		INSERT INTO product_info(product_id,product_name,product_description,category_id,brand_id,price,stock,create_time,last_update_time,status,image_url,tags,sales_count,rating,p_category_id,product_user) VALUES
 		<foreach collection="list" item="item" separator="," >
-			(#{item.productId},#{item.productName},#{item.productDescription},#{item.categoryId},#{item.brandId},#{item.price},#{item.stock},#{item.createTime},#{item.lastUpdateTime},#{item.status},#{item.imageUrl},#{item.tags},#{item.salesCount},#{item.rating})
+			(#{item.productId},#{item.productName},#{item.productDescription},#{item.categoryId},#{item.brandId},#{item.price},#{item.stock},#{item.createTime},#{item.lastUpdateTime},#{item.status},#{item.imageUrl},#{item.tags},#{item.salesCount},#{item.rating},#{item.pCategoryId},#{item.productUser})
 		</foreach>
 			on DUPLICATE key update
-			product_id= VALUES(product_id),product_name= VALUES(product_name),product_description= VALUES(product_description),category_id= VALUES(category_id),brand_id= VALUES(brand_id),price= VALUES(price),stock= VALUES(stock),create_time= VALUES(create_time),last_update_time= VALUES(last_update_time),status= VALUES(status),image_url= VALUES(image_url),tags= VALUES(tags),sales_count= VALUES(sales_count),rating= VALUES(rating)
+			product_id= VALUES(product_id),product_name= VALUES(product_name),product_description= VALUES(product_description),category_id= VALUES(category_id),brand_id= VALUES(brand_id),price= VALUES(price),stock= VALUES(stock),create_time= VALUES(create_time),last_update_time= VALUES(last_update_time),status= VALUES(status),image_url= VALUES(image_url),tags= VALUES(tags),sales_count= VALUES(sales_count),rating= VALUES(rating),p_category_id= VALUES(p_category_id),product_user= VALUES(product_user)
 	</insert>
 
 	<!-- 根据ProductId查询 -->
@@ -440,6 +483,12 @@
 			</if>
 			<if test="bean.rating != null">
 				rating = #{bean.rating},
+			</if>
+			<if test="bean.pCategoryId != null">
+				p_category_id = #{bean.pCategoryId},
+			</if>
+			<if test="bean.productUser != null">
+				product_user = #{bean.productUser},
 			</if>
 		</set>
 		where product_id=#{productId}

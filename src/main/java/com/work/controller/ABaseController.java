@@ -28,4 +28,21 @@ public class ABaseController {
         vo.setData(t);
         return vo;
     }
+    protected <T> ResponseVO getServerErrorIdResponseVO(T t) {
+        ResponseVO vo = new ResponseVO();
+        vo.setStatus(STATUC_ERROR);
+        vo.setCode(ResponseCodeEnum.CODE_601.getCode());
+        vo.setInfo(ResponseCodeEnum.CODE_601.getMsg());
+        vo.setData(t);
+        return vo;
+    }
+
+    protected <T> ResponseVO getServerErrorProductResponseVO(T t) {
+        ResponseVO vo = new ResponseVO();
+        vo.setStatus(STATUC_ERROR);
+        vo.setCode(ResponseCodeEnum.CODE_602.getCode());
+        vo.setInfo(ResponseCodeEnum.CODE_602.getMsg());
+        vo.setData(t);
+        return vo;
+    }
 }

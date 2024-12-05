@@ -4,6 +4,7 @@ public class Constants {
     public static final Integer ONE = 1;
     public static final Integer ZERO = 0;
     public static final Integer TWO = 2;
+    public static final Integer THREE = 3;
     public static final Integer LENGTH_10 = 10;
     public static final Integer LENGTH_15 = 15;
     public static final Integer LENGTH_20 = 20;
