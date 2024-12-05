@@ -29,6 +29,8 @@
         <property name="suffix" value=".jsp"/>
     </bean>
 
+    <!-- 导入 Redis 配置 -->
+    <import resource="classpath:application-redis.xml"/>
     <!-- 支持上传文件 -->
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
 
