@@ -1,19 +1,17 @@
 package com.work.entity.query;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
  * @Description:商品信息查询对象
- * @date:2024-12-03
+ * @date:2024-12-04
  * @author: liujun
  */
 public class ProductInfoQuery extends BaseQuery{
 	/**
 	 * 商品ID
 	 */
-	@NotNull(message = "用户名不能为空")
 	private String productId;
 
 	private String productIdFuzzy;
@@ -104,6 +102,13 @@ public class ProductInfoQuery extends BaseQuery{
 	 */
 	private Integer pCategoryId;
 
+	/**
+	 * 上传商品的用户
+	 */
+	private String productUser;
+
+	private String productUserFuzzy;
+
 	public void setProductIdFuzzy(String productIdFuzzy) {
 		this.productIdFuzzy = productIdFuzzy;
 	}
@@ -174,6 +179,14 @@ public class ProductInfoQuery extends BaseQuery{
 
 	public String getTagsFuzzy() {
 		return this.tagsFuzzy;
+	}
+
+	public void setProductUserFuzzy(String productUserFuzzy) {
+		this.productUserFuzzy = productUserFuzzy;
+	}
+
+	public String getProductUserFuzzy() {
+		return this.productUserFuzzy;
 	}
 
 	public void setProductId(String productId) {
@@ -294,6 +307,14 @@ public class ProductInfoQuery extends BaseQuery{
 
 	public Integer getPCategoryId() {
 		return this.pCategoryId;
+	}
+
+	public void setProductUser(String productUser) {
+		this.productUser = productUser;
+	}
+
+	public String getProductUser() {
+		return this.productUser;
 	}
 
 }

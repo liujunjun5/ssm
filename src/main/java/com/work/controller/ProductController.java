@@ -38,8 +38,8 @@ public class ProductController extends ABaseController {
     public ResponseVO addProduct(String productId, String categoryId,
                                  String productCover, String pCategoryId,
                                  String productName, String description,
-                                 BigDecimal price, String brandId){
-        if (productId.isEmpty() || pCategoryId.isEmpty() || productName.isEmpty() || price==null || brandId.isEmpty()) {
+                                 BigDecimal price, Integer brandId){
+        if (productId.isEmpty() || pCategoryId.isEmpty() || productName.isEmpty() || price==null ) {
             return getServerErrorProductResponseVO("必要信息不能为空");
         }
         if(getProductByProductId(productId).getCode()!=200){//找不到这个产品才可以添加
@@ -138,12 +138,20 @@ public class ProductController extends ABaseController {
             }
             RateInfo rateInfo = new RateInfo();
             rateInfo.setProductId(productId);
+            rateInfo.setRate(rate);
+            rateInfo.setUserId("boss");
+            rateInfoService.updateRateByProductId(productId,rateInfo.getUserId(),rate);
             List<Integer> param = rateInfoService.findRateByParam(rateInfo, productId);
             int sum = 0;
             for (int i : param) {
                 sum += i;
             }
-            Integer relRate =  sum / param.size();
+            Integer relRate;
+            if(sum==0){
+                relRate=0;
+            }else {
+                relRate = sum / param.size();
+            }
             System.out.println(relRate);
             ProductInfo productInfo = new ProductInfo();
             productInfo.setRating(relRate);

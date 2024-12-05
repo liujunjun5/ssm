@@ -12,6 +12,10 @@
         <!-- 分类ID -->
         <result column="rate" property="rate"/>
     </resultMap>
+
+    <update id="updateRateByProductId">
+        update rate_info set rate=#{rate} where product_id=#{productId} and user_id=#{userId}
+    </update>
     <!-- 根据ProductId查询评分 -->
     <select id="findRateByProductId" resultType="java.lang.Integer">
         select rate from rate_info where product_id=#{productId}
@@ -19,4 +23,5 @@
     <insert id="addRateByProductId" parameterType="com.work.entity.po.RateInfo" >
         INSERT INTO rate_info
     </insert>
+
 </mapper>

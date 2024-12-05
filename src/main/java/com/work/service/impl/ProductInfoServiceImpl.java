@@ -1,6 +1,7 @@
 package com.work.service.impl;
 
 import com.work.entity.po.ProductInfo;
+import com.work.entity.po.RateInfo;
 import com.work.entity.query.ProductInfoQuery;
 import com.work.entity.query.SimplePage;
 import com.work.entity.vo.PaginationResultVO;
@@ -36,6 +37,8 @@ public class ProductInfoServiceImpl implements ProductInfoService {
 	public Integer findCountByParam(ProductInfoQuery query) {
 		return this.productInfoMappers.selectCount(query);
 	}
+
+
 
 	/**
 	 * 分页查询

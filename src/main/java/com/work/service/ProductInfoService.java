@@ -1,6 +1,7 @@
 package com.work.service;
 
 import com.work.entity.po.ProductInfo;
+import com.work.entity.po.RateInfo;
 import com.work.entity.query.ProductInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
 

@@ -8,4 +8,6 @@ public interface RateInfoMappers <T, P> extends BaseMapper{
     List<Integer> findRateByProductId(@Param("bean") T t, @Param("productId") String productId);
 
     Integer addRateByProductId(@Param("bean") T t, @Param("productId") String productId);
+
+    void updateRateByProductId(@Param("productId")String productId,@Param("userId")String userId,@Param("rate")Integer rate);
 }
