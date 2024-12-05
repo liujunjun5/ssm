@@ -20,4 +20,9 @@ public class RateInfoServiceImpl implements RateInfoService {
     public Integer addRateByProductId(RateInfo bean, String productId) {
         return this.rateInfoMappers.addRateByProductId(bean,productId);
     }
+
+
+    public void updateRateByProductId(String productId,String userId,Integer rate) {
+        this.rateInfoMappers.updateRateByProductId(productId,userId,rate);
+    }
 }

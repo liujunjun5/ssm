@@ -9,4 +9,5 @@ public interface RateInfoService {
 
     Integer addRateByProductId(RateInfo bean, String productId);
 
+    void updateRateByProductId(String productId,String userId,Integer rate);
 }
