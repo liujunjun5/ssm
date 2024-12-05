@@ -74,4 +74,9 @@ public interface CategoryInfoService {
 	 */
 	Integer deleteByCategoryCode(String categoryCode);
 
+	/**
+	 * 寻找最大sort字段
+	 */
+	Integer findMaxSort();
+
 }
