@@ -94,6 +94,22 @@ public class UserInfo implements Serializable {
 	 */
 	private Integer theme;
 
+	public UserInfo(){};
+
+	/**ljz
+	 * 用于回显的用户数据转用户数据更新类
+	 */
+	public UserInfo(ClaimsOfUserInfo claimsOfUserInfo ){
+
+		this.nickName = claimsOfUserInfo.getNickName();
+		this.avatar = claimsOfUserInfo.getAvatar();
+		this.sex = claimsOfUserInfo.getSex();
+		this.birthday = claimsOfUserInfo.getBirthday();
+		this.personIntroduction = claimsOfUserInfo.getPersonIntroduction();
+		this.noticeInfo = claimsOfUserInfo.getNoticeInfo();
+
+	}
+
 
 	public void setUserId(String userId) {
 		this.userId = userId;

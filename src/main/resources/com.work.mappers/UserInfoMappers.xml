@@ -144,6 +144,14 @@
 		</where>
 	</sql>
 
+	<!--ljz:查询单个用户-->
+	<select id="selectByEP" resultMap="base_result_map">
+		SELECT
+		<include refid="base_column_list"/>
+		FROM user_info
+		<include refid="query_condition"/>
+	</select>
+
 	<!--查询列表-->
 	<select id = "selectList" resultMap="base_result_map">
 		SELECT

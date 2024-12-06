@@ -11,6 +11,11 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserInfoMappers<T, P> extends BaseMapper {
 
+	/**ljz
+	 *根据邮箱、密码查询
+	 */
+	T selectByEP(@Param("query") P p);
+
 	/**
 	 * 根据UserId查询
 	 */

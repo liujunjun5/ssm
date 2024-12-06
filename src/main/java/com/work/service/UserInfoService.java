@@ -1,5 +1,6 @@
 package com.work.service;
 
+import com.work.entity.po.ClaimsOfUserInfo;
 import com.work.entity.po.UserInfo;
 import com.work.entity.query.UserInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
@@ -10,7 +11,14 @@ import java.util.List;
  * @date:2024-12-02
  * @author: liujun
  */
-public interface UserInfoService { 
+public interface UserInfoService {
+
+
+	/**
+	 * ljz
+	 * 根据条件查询唯一用户
+	 */
+	String findOneByParam(String email, String passwordMd5);
 
 	/**
 	 * 根据条件查询列表
@@ -90,4 +98,11 @@ public interface UserInfoService {
 	 */
 	Integer deleteByNickName(String nickName);
 
+	String register(String nickname, String email, String password);
+
+	ClaimsOfUserInfo getByTokenFromRedis(String token);
+
+	void updateByTokenOfUser(ClaimsOfUserInfo claimsOfUserInfo, String token);
+
+//    void updateByUserIdOfUser(String nickName, String avatar, Integer sex, String birthday, String personIntroduction, String noticeInfo);
 }

@@ -3,8 +3,22 @@ package com.work.controller;
 
 import com.work.entity.vo.ResponseVO;
 import com.work.enums.ResponseCodeEnum;
+import com.work.entity.constants.Constants;
+import com.work.utils.JwtUtils;
+import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class ABaseController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     protected static final String STATUC_SUCCESS = "success";
 
@@ -45,4 +59,40 @@ public class ABaseController {
         vo.setData(t);
         return vo;
     }
+
+
+    /**ljz
+     * token设置
+     **/
+    public void saveJwtCookie(HttpServletResponse response, String token ,Integer autoLogin) {
+        Cookie cookie = new Cookie(Constants.TOKEN_KEY, token);
+        //如果用户选择自动登录，生成持久化cookie
+        if(autoLogin == 1){
+            cookie.setMaxAge(Constants.TIME_SECONDS_DAY * 30);
+        }
+        cookie.setPath("/");
+        response.addCookie(cookie);
+    }
+
+    /**ljz
+     * token清除
+     **/
+    public void cleanJwtCookie(HttpServletResponse response,
+                               HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return;
+        }
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(Constants.TOKEN_KEY)) {
+
+                stringRedisTemplate.delete("用户:"+cookie.getValue());
+                cookie.setMaxAge(0);
+                cookie.setPath("/");
+                response.addCookie(cookie);
+                break;
+            }
+        }
+    }
+    
 }

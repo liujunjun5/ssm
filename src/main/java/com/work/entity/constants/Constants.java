@@ -23,6 +23,8 @@ public class Constants {
     public static final String REDIS_KEY_PREFIX = "web:";
     public static final String REDIS_KEY_CHECK_CODE = REDIS_KEY_PREFIX + "checkCode:";
 
-
-
+    /**
+     * token键名
+     */
+    public static final String TOKEN_KEY = "Jwt_token";
 }
