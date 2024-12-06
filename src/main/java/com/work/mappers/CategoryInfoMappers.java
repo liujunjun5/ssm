@@ -39,4 +39,8 @@ public interface CategoryInfoMappers<T, P> extends BaseMapper {
 	 */
 	Integer deleteByCategoryCode(@Param("categoryCode") String categoryCode);
 
+	/**
+	 * 查询最大的sort值
+	 */
+	Integer findMaxSort();
 }

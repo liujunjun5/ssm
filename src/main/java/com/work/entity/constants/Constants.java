@@ -27,4 +27,11 @@ public class Constants {
      * token键名
      */
     public static final String TOKEN_KEY = "Jwt_token";
+
+
+
+    public static final String DATE_PATTERN = "yyyyMMdd";
+    public static final String PROJECT_FOLDER = "D:\\ssm\\pics";
+    public static final String FILE_FOLDER = "uploadImage";
+    public static final String FILE_CATEGORY1 = "category1/";
 }

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.mappers.BrandInfoMappers">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.work.entity.po.BrandInfo">
+		<!-- 自增品牌id -->
+		<id column="brand_id" property="brandId"/>
+		<!-- 品牌名 -->
+		<result column="brand_name" property="brandName"/>
+		<!-- 品牌描述 -->
+		<result column="brand_desc" property="brandDesc"/>
+		<!-- 创建时间 -->
+		<result column="created_at" property="createdAt"/>
+		<!-- 修改时间 -->
+		<result column="updated_at" property="updatedAt"/>
+
+	</resultMap>
+
+	<!--通用查询列-->
+	<sql id="base_column_list">
+		brand_id,brand_name,brand_desc,created_at,updated_at
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+
+		<if test="query.brandId!=null">
+			and brand_id = #{query.brandId}
+		</if>
+		<if test="query.brandName!=null and query.brandName!=''">
+			and brand_name = #{query.brandName}
+		</if>
+		<if test="query.brandDesc!=null and query.brandDesc!=''">
+			and brand_desc = #{query.brandDesc}
+		</if>
+		<if test="query.createdAt!=null">
+			and created_at = #{query.createdAt}
+		</if>
+		<if test="query.updatedAt!=null">
+			and updated_at = #{query.updatedAt}
+		</if>
+	</sql>
+
+	<!--拓展的查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.brandNameFuzzy!=null and query.brandNameFuzzy!=''">
+			and brand_name like concat ('%', #{query.brandNameFuzzy}, '%')
+		</if>
+		<if test="query.brandDescFuzzy!=null and query.brandDescFuzzy!=''">
+			and brand_desc like concat ('%', #{query.brandDescFuzzy}, '%')
+		</if>
+		<if test="query.createdAtStart!=null and query.createdAtStart!=''">
+			<![CDATA[ and created_at>=str_to_date(#{query.createdAtStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createdAtEnd!=null and query.createdAtEnd!=''">
+			<![CDATA[ and created_at< date_sub(str_to_date(#{query.createdAtEnd},'%Y-%m-%d')，interval -1 day) ]]>
+		</if>
+		<if test="query.updatedAtStart!=null and query.updatedAtStart!=''">
+			<![CDATA[ and updated_at>=str_to_date(#{query.updatedAtStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.updatedAtEnd!=null and query.updatedAtEnd!=''">
+			<![CDATA[ and updated_at< date_sub(str_to_date(#{query.updatedAtEnd},'%Y-%m-%d')，interval -1 day) ]]>
+		</if>
+
+	</sql>
+
+	<!--通用的查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id = "selectList" resultMap="base_result_map">
+		SELECT
+		<include refid="base_column_list"/>
+		FROM brand_info
+		<include refid="query_condition"/>
+		<if test="query.orderBy!=null">order by ${query.orderBy}</if>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+	<!--查询数量-->
+	<select id = "selectCount" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM brand_info
+		<include refid="query_condition"/>
+	</select>
+
+	<!--插入 （匹配有值的字段）-->
+	<insert id = "insert" parameterType="com.work.entity.po.BrandInfo">
+		<selectKey keyProperty="bean.brand_id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO brand_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.brandId != null">
+				brand_id,
+			</if>
+			<if test="bean.brandName != null">
+				brand_name,
+			</if>
+			<if test="bean.brandDesc != null">
+				brand_desc,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.brandId != null">
+				#{bean.brandId},
+			</if>
+			<if test="bean.brandName != null">
+				#{bean.brandName},
+			</if>
+			<if test="bean.brandDesc != null">
+				#{bean.brandDesc},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+	</insert>
+
+		<!-- 插入或者更新 （匹配有值的字段） -->
+	<insert id = "insertOrUpdate" parameterType="com.work.entity.po.BrandInfo">
+		INSERT INTO brand_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.brandId != null">
+				brand_id,
+			</if>
+			<if test="bean.brandName != null">
+				brand_name,
+			</if>
+			<if test="bean.brandDesc != null">
+				brand_desc,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.brandId != null">
+				#{bean.brandId},
+			</if>
+			<if test="bean.brandName != null">
+				#{bean.brandName},
+			</if>
+			<if test="bean.brandDesc != null">
+				#{bean.brandDesc},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.brandName != null">
+				 brand_name = VALUES(brand_name)
+			</if>
+			<if test="bean.brandDesc != null">
+				 brand_desc = VALUES(brand_desc)
+			</if>
+			<if test="bean.createdAt != null">
+				 created_at = VALUES(created_at)
+			</if>
+			<if test="bean.updatedAt != null">
+				 updated_at = VALUES(updated_at)
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 批量插入 -->
+	<insert id ="insertBatch" parameterType="com.work.entity.po.BrandInfo">
+		INSERT INTO brand_info(brand_name,brand_desc,created_at,updated_at) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.brandName},#{item.brandDesc},#{item.createdAt},#{item.updatedAt})
+		</foreach>
+	</insert>
+
+	<!-- 批量插入（或者更新） -->
+	<insert id ="insertOrUpdateBatch" parameterType="com.work.entity.po.BrandInfo">
+		INSERT INTO brand_info(brand_name,brand_desc,created_at,updated_at) VALUES
+		<foreach collection="list" item="item" separator="," >
+			(#{item.brandName},#{item.brandDesc},#{item.createdAt},#{item.updatedAt})
+		</foreach>
+			on DUPLICATE key update
+			brand_name= VALUES(brand_name),brand_desc= VALUES(brand_desc),created_at= VALUES(created_at),updated_at= VALUES(updated_at)
+	</insert>
+
+	<!-- 根据BrandId查询 -->
+	<select id="selectByBrandId" resultMap="base_result_map">
+		select <include refid="base_column_list"/> from brand_info where brand_id=#{brandId}
+	</select>
+
+	<!-- 根据BrandId更新 -->
+	<update id="updateByBrandId" parameterType="com.work.entity.po.BrandInfo">
+		update brand_info
+		<set>
+			<if test="bean.brandId != null">
+				brand_id = #{bean.brandId},
+			</if>
+			<if test="bean.brandName != null">
+				brand_name = #{bean.brandName},
+			</if>
+			<if test="bean.brandDesc != null">
+				brand_desc = #{bean.brandDesc},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+		</set>
+		where brand_id=#{brandId}
+	</update>
+
+	<!-- 根据BrandId删除 -->
+	<delete id="deleteByBrandId">
+		delete from brand_info where brand_id=#{brandId}
+	</delete>
+</mapper>

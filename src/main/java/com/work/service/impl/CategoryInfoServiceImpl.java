@@ -121,4 +121,12 @@ public class CategoryInfoServiceImpl implements CategoryInfoService {
 		return this.categoryInfoMappers.deleteByCategoryCode(categoryCode);
 	}
 
+	/**
+	 * 寻找最大sort字段
+	 */
+	public Integer findMaxSort() {
+		Integer MaxSort = this.categoryInfoMappers.findMaxSort();
+		return MaxSort==null?0:MaxSort;
+	}
+
 }

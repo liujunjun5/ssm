@@ -493,7 +493,6 @@
 		</set>
 		where product_id=#{productId}
 	</update>
-
 	<!-- 根据ProductId删除 -->
 	<delete id="deleteByProductId">
 		delete from product_info where product_id=#{productId}

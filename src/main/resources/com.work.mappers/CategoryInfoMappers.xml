@@ -77,6 +77,11 @@
 		</where>
 	</sql>
 
+	<!-- 查询最大的sort值 -->
+	<select id="findMaxSort" resultType="java.lang.Integer">
+		SELECT MAX(sort) FROM category_info
+	</select>
+
 	<!--查询列表-->
 	<select id = "selectList" resultMap="base_result_map">
 		SELECT
@@ -94,8 +99,9 @@
 	</select>
 
 	<!--插入 （匹配有值的字段）-->
+	<!--注意：此处有改动，原文为keyProperty="bean.category_id，会导致数据回填时在CategoryInfo类中找不到对应属性与setter方法-->
 	<insert id = "insert" parameterType="com.work.entity.po.CategoryInfo">
-		<selectKey keyProperty="bean.category_id" resultType="Integer" order="AFTER">
+		<selectKey keyProperty="bean.categoryId" resultType="Integer" order="AFTER">
 			SELECT LAST_INSERT_ID()
 		</selectKey>
 		INSERT INTO category_info
