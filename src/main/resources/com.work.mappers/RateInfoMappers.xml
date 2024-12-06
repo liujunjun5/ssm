@@ -20,8 +20,33 @@
     <select id="findRateByProductId" resultType="java.lang.Integer">
         select rate from rate_info where product_id=#{productId}
     </select>
+    <select id="findRate" resultType="java.lang.Integer">
+        select rate_id from rate_info where product_id=#{productId} and user_id=#{userId}
+    </select>
     <insert id="addRateByProductId" parameterType="com.work.entity.po.RateInfo" >
         INSERT INTO rate_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.productId != null">
+                product_id,
+            </if>
+            <if test="bean.userId != null">
+                user_id,
+            </if>
+            <if test="bean.rate != null">
+                rate,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.productId != null">
+                #{bean.productId},
+            </if>
+            <if test="bean.userId != null">
+                #{bean.userId},
+            </if>
+            <if test="bean.rate != null">
+                #{bean.rate},
+            </if>
+        </trim>
     </insert>
 
 </mapper>

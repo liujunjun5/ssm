@@ -13,16 +13,20 @@ import java.util.List;
 public class RateInfoServiceImpl implements RateInfoService {
     @Resource
     private RateInfoMappers<RateInfo, ProductInfoQuery> rateInfoMappers;
-    public List<Integer> findRateByParam(RateInfo bean, String productId) {
-        return this.rateInfoMappers.findRateByProductId(bean, productId);
+    public List<Integer> findRateByParam(String productId) {
+        return this.rateInfoMappers.findRateByProductId(productId);
     }
 
-    public Integer addRateByProductId(RateInfo bean, String productId) {
-        return this.rateInfoMappers.addRateByProductId(bean,productId);
+    public Integer addRateByProductId(RateInfo bean) {
+        return this.rateInfoMappers.addRateByProductId(bean);
     }
 
 
     public void updateRateByProductId(String productId,String userId,Integer rate) {
         this.rateInfoMappers.updateRateByProductId(productId,userId,rate);
+    }
+
+    public Integer findRate(String productId,String userId){
+        return this.rateInfoMappers.findRate(productId,userId);
     }
 }
