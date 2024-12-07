@@ -30,6 +30,11 @@
 		comment_id,product_id,product_user_id,content,img_path,user_id,reply_user_id,top_type,post_time
 	</sql>
 
+	<!--查询最大CommentId-->
+	<select id="findMaxCommentId" resultType="java.lang.Integer">
+		SELECT MAX(comment_id) FROM product_comment
+	</select>
+
 	<!--基础查询条件-->
 	<sql id="base_query_condition">
 
@@ -116,8 +121,9 @@
 	</select>
 
 	<!--插入 （匹配有值的字段）-->
+	<!--注意：此处有改动，原文为keyProperty="bean.comment_id，会导致数据回填时在ProductComment类中找不到对应属性与setter方法-->
 	<insert id = "insert" parameterType="com.work.entity.po.ProductComment">
-		<selectKey keyProperty="bean.comment_id" resultType="Integer" order="AFTER">
+		<selectKey keyProperty="bean.commentId" resultType="Integer" order="AFTER">
 			SELECT LAST_INSERT_ID()
 		</selectKey>
 		INSERT INTO product_comment

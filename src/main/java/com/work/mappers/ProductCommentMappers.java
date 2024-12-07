@@ -24,4 +24,8 @@ public interface ProductCommentMappers<T, P> extends BaseMapper {
 	 */
 	Integer deleteByCommentId(@Param("commentId") Integer commentId);
 
+	/**
+	 * 查找最大CommentId
+	 */
+	Integer findMaxCommentId();
 }

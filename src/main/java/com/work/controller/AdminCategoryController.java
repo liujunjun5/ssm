@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin/category")
-public class CategoryController extends ABaseController {
+public class AdminCategoryController extends ABaseController {
     @Autowired
     private CategoryInfoService categoryInfoService;
 

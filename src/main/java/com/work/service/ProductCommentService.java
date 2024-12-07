@@ -61,4 +61,9 @@ public interface ProductCommentService {
 	 */
 	Integer deleteByCommentId(Integer commentId);
 
+	/**
+	 * 查找最大CommentId
+	 */
+	Integer findMaxCommentId();
+
 }

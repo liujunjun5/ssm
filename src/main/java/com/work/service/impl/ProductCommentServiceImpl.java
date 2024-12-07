@@ -99,4 +99,12 @@ public class ProductCommentServiceImpl implements ProductCommentService {
 		return this.productCommentMappers.deleteByCommentId(commentId);
 	}
 
+	/**
+	 * 查找最大CommentId
+	 */
+	public Integer findMaxCommentId(){
+		Integer MaxCommentId = this.productCommentMappers.findMaxCommentId();
+		return MaxCommentId==null?0:MaxCommentId;
+	};
+
 }
