@@ -94,7 +94,6 @@ public class UserInfo implements Serializable {
 	 */
 	private Integer theme;
 
-	public UserInfo(){};
 
 	/**ljz
 	 * 用于回显的用户数据转用户数据更新类
@@ -107,6 +106,17 @@ public class UserInfo implements Serializable {
 		this.birthday = claimsOfUserInfo.getBirthday();
 		this.personIntroduction = claimsOfUserInfo.getPersonIntroduction();
 		this.noticeInfo = claimsOfUserInfo.getNoticeInfo();
+
+	}
+
+	/**ljz
+	 * 注册对象初始化
+	 */
+	public UserInfo(String nickName, String email, String registerPassword) {
+
+		this.nickName = nickName;
+		this.email = email;
+		this.password = registerPassword;
 
 	}
 

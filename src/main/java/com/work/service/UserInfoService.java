@@ -4,6 +4,7 @@ import com.work.entity.po.ClaimsOfUserInfo;
 import com.work.entity.po.UserInfo;
 import com.work.entity.query.UserInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
+import com.work.exception.BusinessException;
 
 import java.util.List;
 /**
@@ -14,11 +15,20 @@ import java.util.List;
 public interface UserInfoService {
 
 
+	void updateByTokenOfUser(ClaimsOfUserInfo claimsOfUserInfo, String token);
+
+
 	/**
 	 * ljz
 	 * 根据条件查询唯一用户
 	 */
-	String findOneByParam(String email, String passwordMd5);
+	String findOneByParam(UserInfoQuery userInfoQuery) throws BusinessException;
+
+	/**
+	 * ljz
+	 * 根据条件查询唯一用户
+	 */
+	String register(UserInfo bean) throws BusinessException;
 
 	/**
 	 * 根据条件查询列表
@@ -98,11 +108,4 @@ public interface UserInfoService {
 	 */
 	Integer deleteByNickName(String nickName);
 
-	String register(String nickname, String email, String password);
-
-	ClaimsOfUserInfo getByTokenFromRedis(String token);
-
-	void updateByTokenOfUser(ClaimsOfUserInfo claimsOfUserInfo, String token);
-
-//    void updateByUserIdOfUser(String nickName, String avatar, Integer sex, String birthday, String personIntroduction, String noticeInfo);
 }

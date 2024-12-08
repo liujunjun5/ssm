@@ -9,15 +9,17 @@ import com.work.entity.query.SimplePage;
 import com.work.entity.query.UserInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
 import com.work.enums.PageSize;
+import com.work.exception.BusinessException;
+import com.work.mappers.RedisDataMapper;
 import com.work.mappers.UserInfoMappers;
 import com.work.service.UserInfoService;
 import com.work.utils.JwtUtils;
 import com.work.utils.StringTools;
-import org.apache.commons.codec.digest.DigestUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,11 +37,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 	@Autowired
 	private UserInfoMappers<UserInfo, UserInfoQuery> userInfoMappers;
 
-
 	@Autowired
-	private StringRedisTemplate stringRedisTemplate;
-
-
+	private RedisDataMapper redisDataMapper ;
 
 	/**
 	 * 根据条件查询列表
@@ -163,27 +162,27 @@ public class UserInfoServiceImpl implements UserInfoService {
 	 * ljz
 	 * 登录查询操作
 	 */
-	public String findOneByParam(String email, String passwordMd5) {
-		//设置查询条件
-		UserInfoQuery query = new UserInfoQuery();
-		query.setEmail(email);
-		query.setPassword(passwordMd5);
-		//检验账号
-		UserInfo userInfo = this.userInfoMappers.selectByEP(query);
-		if(userInfo != null){
+	public String findOneByParam(UserInfoQuery userInfoQuery) throws BusinessException {
 
-			//登录成功生成Jwt令牌
-			ClaimsOfUserInfo claimsOfUserInfo = new ClaimsOfUserInfo(userInfo.getUserId(),userInfo.getNickName(),userInfo.getAvatar(),userInfo.getSex(),userInfo.getBirthday(),userInfo.getPersonIntroduction(),userInfo.getNoticeInfo());
-			String jwt = JwtUtils.generateJwt(claimsOfUserInfo);
-
-			//将用户信息存入Redis
-			String json = JSON.toJSONString(claimsOfUserInfo);
-			stringRedisTemplate.opsForValue().set("用户:"+jwt, json);
-
-			return jwt;
+		UserInfo userInfo = this.userInfoMappers.selectByEP(userInfoQuery);
+		//检验账号是否存在
+		if(userInfo == null){
+			throw new BusinessException(602,"账号不存在");
 		}
-		//返回查询结果
-		return null;
+		//检验账号是否被封禁
+		if(userInfo.getStatus() == 0){
+			throw new BusinessException(602,"账号被封禁");
+		}
+		//登录成功封装要展示的用户信息
+		ClaimsOfUserInfo claimsOfUserInfo = new ClaimsOfUserInfo(userInfo.getUserId(),userInfo.getNickName(),userInfo.getAvatar(),userInfo.getSex(),userInfo.getBirthday(),userInfo.getPersonIntroduction(),userInfo.getNoticeInfo());
+		String json = JSON.toJSONString(claimsOfUserInfo);//用户信息转json数据
+
+		ClaimsOfUserInfo Md5Claims = claimsOfUserInfo.encryptOfMd5(claimsOfUserInfo);//将部分数据做加密操作，生成Jwt令牌
+		String jwt = JwtUtils.generateJwt(Md5Claims);
+		//将用户信息存入Redis
+//		stringRedisTemplate.opsForValue().set("user:"+jwt, json);
+		redisDataMapper.setData("user:"+jwt,json);
+		return jwt;
 	}
 
 	/**
@@ -191,34 +190,38 @@ public class UserInfoServiceImpl implements UserInfoService {
 	 * 注册
 	 */
 	@Override
-	public String register(String nickname, String email, String password) {
+	public String register(UserInfo userInfo) throws BusinessException {
 		//检查是否有相同邮箱账号
-		if(userInfoMappers.selectByEmail(email) != null){
-			return null;
+		if(userInfoMappers.selectByEmail(userInfo.getEmail()) != null){
+			throw new BusinessException(602,"该邮箱已注册");
 		}
 		//昵称默认赋值
-		if(!StringUtils.hasLength(nickname)){
-			nickname = "用户"+userInfoMappers.selectCount(new UserInfoQuery()).toString();
+		if(!StringUtils.hasLength(userInfo.getNickName())){
+			userInfo.setNickName("用户"+userInfoMappers.selectCount(new UserInfoQuery()).toString()) ;
 		}
 		//创建新用户
-		UserInfo newUser = new UserInfo();
-		newUser.setUserId(StringTools.getRandomNumber(Constants.LENGTH_10));
-		newUser.setNickName(nickname);
-		newUser.setEmail(email);
-		newUser.setPassword(DigestUtils.md5Hex(password));
-		newUser.setJoinTime(new Date());
-		newUser.setCurrentCoinCount(BigDecimal.ZERO);
+		userInfo.setUserId(StringTools.getRandomNumber(Constants.LENGTH_10));
+		userInfo.setJoinTime(new Date());
+		userInfo.setCurrentCoinCount(BigDecimal.ZERO);
 		//新账号录入数据库
-		this.userInfoMappers.insert(newUser);
-
-		ClaimsOfUserInfo claimsOfUserInfo = new ClaimsOfUserInfo(newUser.getUserId(),newUser.getNickName(),newUser.getAvatar(),newUser.getSex(),newUser.getBirthday(),newUser.getPersonIntroduction(),newUser.getNoticeInfo());
-		String jwt = JwtUtils.generateJwt(claimsOfUserInfo);
-
+		this.userInfoMappers.insert(userInfo);
+		//注册成功封装要展示的用户信息
+		ClaimsOfUserInfo claimsOfUserInfo = new ClaimsOfUserInfo(userInfo.getUserId(),
+																 userInfo.getNickName(),
+																 userInfo.getAvatar(),
+																 userInfo.getSex(),
+																 userInfo.getBirthday(),
+																 userInfo.getPersonIntroduction(),
+																 userInfo.getNoticeInfo());
+		String json = JSON.toJSONString(claimsOfUserInfo);
+//		String jwt = JwtUtils.generateJwt(claimsOfUserInfo.encryptOfMd5());
+		ClaimsOfUserInfo Md5Claims = claimsOfUserInfo.encryptOfMd5(claimsOfUserInfo);
+		String jwt = JwtUtils.generateJwt(Md5Claims);
 		//用户数据存入Redis
 //		SerializerFeature[] features = new SerializerFeature[]{SerializerFeature.WriteDateUseDateFormat};
 //		String json = JSON.toJSONString(claimsOfUserInfo, features);
-		String json = JSON.toJSONString(claimsOfUserInfo);
-		stringRedisTemplate.opsForValue().set("用户:"+jwt, json);
+		redisDataMapper.setData("user:"+jwt, json);
+//		stringRedisTemplate.opsForValue().set("user:"+jwt, json);
 
 		return jwt;
 	}
@@ -226,32 +229,35 @@ public class UserInfoServiceImpl implements UserInfoService {
 	/**ljz
 	 * 获取Redis中用户数据
 	 */
-	@Override
-	public ClaimsOfUserInfo getByTokenFromRedis(String token) {
-
-		String redisUserId = "用户:"+token;
-		String json = stringRedisTemplate.opsForValue().get(redisUserId);
-		ClaimsOfUserInfo claimsOfUserInfo = JSON.parseObject(json,ClaimsOfUserInfo.class);
-
-		return claimsOfUserInfo;
-	}
+//	@Override
+//	public ClaimsOfUserInfo getByTokenFromRedis(String token) {
+//
+//		String redisUserId = "user:"+token;
+//		String json = stringRedisTemplate.opsForValue().get(redisUserId);
+//		ClaimsOfUserInfo claimsOfUserInfo = JSON.parseObject(json,ClaimsOfUserInfo.class);
+//
+//		return claimsOfUserInfo;
+//	}
 
 	/**ljz
 	 * 更新两个数据库中用户数据
 	 */
 	@Override
-	public void updateByTokenOfUser(ClaimsOfUserInfo claimsOfUserInfo, String token) {
+	public void updateByTokenOfUser(ClaimsOfUserInfo claimsOfUserInfo, String key) {
 
-		String redisUserId = "用户:"+token;
-		String json = stringRedisTemplate.opsForValue().get(redisUserId);
-		ClaimsOfUserInfo claimsOfRedis = JSON.parseObject(json,ClaimsOfUserInfo.class);
+
+		ClaimsOfUserInfo claimsOfRedis = redisDataMapper.getByKey(key, ClaimsOfUserInfo.class);
+//		String redisUserId = "user:"+token;
+//		String json = stringRedisTemplate.opsForValue().get(key);
+//		ClaimsOfUserInfo claimsOfRedis = JSON.parseObject(json,ClaimsOfUserInfo.class);
 
 		//数据库更新
 		userInfoMappers.updateByUserId(new UserInfo(claimsOfUserInfo),claimsOfRedis.getUserId());
 
 		//Redis更新
-		json = JSON.toJSONString(claimsOfRedis.addUserInfo(claimsOfUserInfo));
-		stringRedisTemplate.opsForValue().set(redisUserId, json);
+		redisDataMapper.updateByKey(key,claimsOfRedis.addUserInfo(claimsOfUserInfo));
+//		json = JSON.toJSONString(claimsOfRedis.addUserInfo(claimsOfUserInfo));
+//		stringRedisTemplate.opsForValue().set(redisUserId, json);
 
 	}
 

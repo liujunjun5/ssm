@@ -16,22 +16,20 @@ public class JwtUtils {
     private static String signKey = "emanon";
     private static Long expire = 43200000L;//
 
-    /**
+    /**ljz
      * 生成JWT令牌
      * @param object JWT第二部分负载 payload 中存储的内容
-     * @return
      */
     public static String generateJwt(Object object){
-
+        //加密对象转mapper对象claims
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> claims = objectMapper.convertValue(object, Map.class);
-
-        String jwt = Jwts.builder()
+        //生成令牌
+        return Jwts.builder()
                 .addClaims(claims)
                 .signWith(SignatureAlgorithm.HS256, signKey)
                 .setExpiration(new Date(System.currentTimeMillis() + expire))
                 .compact();
-        return jwt;
     }
 
     /**
