@@ -6,14 +6,6 @@ import java.io.Serializable;
 public class RateInfo implements Serializable {
 	private int rateId;
 
-	public int getRateId() {
-		return rateId;
-	}
-
-	public void setRateId(int rateId) {
-		this.rateId = rateId;
-	}
-
 	/**
 	 * 商品ID
 	 */
