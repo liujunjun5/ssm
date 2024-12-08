@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.mappers.OrderMappers">
+    <!--实体映射-->
+    <resultMap id="oderMap" type="com.work.entity.po.Order">
+        <!-- 订单ID -->
+        <id column="order_id" property="orderId"/>
+        <!-- 订单编号 -->
+        <result column="order_no" property="orderNo"/>
+        <!-- 交易金额 -->
+        <result column="price" property="price"/>
+        <!-- 付款时间 -->
+        <result column="pay_time" property="payTime"/>
+        <!-- 付款人 -->
+        <result column="payer" property="payer"/>
+        <!-- 收款人 -->
+        <result column="payee" property="payee"/>
+    </resultMap>
+    <!--通用查询列-->
+    <sql id="base_column_list">
+order_id,order_no,price,pay_time
+    </sql>
+
+
+    <insert id="add" parameterType="com.work.entity.po.Order" >
+        INSERT INTO `order`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.orderNo != null">
+                order_no,
+            </if>
+            <if test="bean.price != null">
+                price,
+            </if>
+            <if test="bean.payTime != null">
+                pay_time,
+            </if>
+            <if test="bean.payer != null">
+                payer,
+            </if>
+            <if test="bean.payee != null">
+                payee,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.orderNo != null">
+                #{bean.orderNo},
+            </if>
+            <if test="bean.price != null">
+                #{bean.price},
+            </if>
+            <if test="bean.payTime != null">
+                #{bean.payTime},
+            </if>
+            <if test="bean.payer != null">
+                #{bean.payer},
+            </if>
+            <if test="bean.payee != null">
+                #{bean.payee},
+            </if>
+        </trim>
+    </insert>
+
+</mapper>

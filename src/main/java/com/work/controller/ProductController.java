@@ -1,21 +1,20 @@
 package com.work.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.work.config.AlipayConfig;
 import com.work.entity.constants.Constants;
-import com.work.entity.po.ClaimsOfUserInfo;
-import com.work.entity.po.ProductInfo;
-import com.work.entity.po.RateInfo;
+import com.work.entity.po.*;
+import com.work.entity.query.BrandInfoQuery;
 import com.work.entity.query.ProductInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
 import com.work.entity.vo.ResponseVO;
 import com.work.exception.BusinessException;
-import com.work.service.ProductInfoService;
-import com.work.service.RateInfoService;
-import com.work.service.UserInfoService;
+import com.work.service.*;
+import com.work.utils.UuidTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -26,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +41,12 @@ public class ProductController extends ABaseController {
 
     @Autowired
     private UserInfoService userInfoService;
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private BrandInfoService brandInfoService;
 
     //通过ID找商品
     public Boolean getProductById(String productId) throws BusinessException {
@@ -91,14 +95,38 @@ public class ProductController extends ABaseController {
     }
 
     @GetMapping("/loadProducts")//分页查找上架商品模块
-    public PaginationResultVO loadProducts(Integer pageNo){
+    public ResponseVO loadProducts(Integer pageNo){
         pageNo = pageNo == null ? 1 : pageNo;
         ProductInfoQuery productInfoQuery = new ProductInfoQuery();
         productInfoQuery.setPageNo(pageNo);
         productInfoQuery.setStatus(Constants.ONE);
-        return productInfoService.findByPage(productInfoQuery);
+        return getSuccessResponseVO(productInfoService.findByPage(productInfoQuery));
     }
 
+
+    @GetMapping("/loadRecommendProduct")//分页查询推荐且上架的商品模块
+    public ResponseVO loadRecommendProduct(Integer pageNo){
+        pageNo = pageNo == null ? 1 : pageNo;
+        ProductInfoQuery productInfoQuery = new ProductInfoQuery();
+        productInfoQuery.setPageNo(pageNo);
+        productInfoQuery.setStatus(Constants.ONE);
+        productInfoQuery.setTags("true");
+        return getSuccessResponseVO(productInfoService.findByPage(productInfoQuery));
+    }
+
+    public List<BrandInfo> findById(Integer brandId) throws BusinessException{
+        if (brandId==null) {
+            throw new BusinessException("没有对应品牌");
+        }
+        BrandInfoQuery brandInfoQuery = new BrandInfoQuery();
+        brandInfoQuery.setBrandId(brandId);
+        List<BrandInfo> listBrand = brandInfoService.findListByParam(brandInfoQuery);//将查询结果放入listBrand
+        if(!listBrand.isEmpty()){
+            return listBrand;
+        }else {
+            throw new BusinessException("没有对应品牌");
+        }
+    }
     @GetMapping("/getProductByProductId")//根据商品ID查找上架商品模块
     public ResponseVO getProductByProductId(String productId) throws BusinessException {
         if (productId.isEmpty()) {
@@ -108,8 +136,13 @@ public class ProductController extends ABaseController {
         productInfoQuery.setProductId(productId);
         productInfoQuery.setStatus(Constants.ONE);
         List<ProductInfo> listProduct = productInfoService.findListByParam(productInfoQuery);//将查询结果放入listProduct
-        if(!listProduct.isEmpty()){
-            return getSuccessResponseVO(listProduct);
+        if(!listProduct.isEmpty()){//找到商品后
+            List<BrandInfo> brand = findById(listProduct.get(0).getBrandId());//找品牌信息
+            return getSuccessResponseVO("商品信息{" +
+                            listProduct  +
+                            "}" + "品牌信息{" +
+                            brand +
+                            '}');
         }else {
             throw new BusinessException("不存在该商品");
         }
@@ -221,37 +254,52 @@ public class ProductController extends ABaseController {
     }
 
     @GetMapping("/loadProductsByCid")//根据分类查找商品模块
-    public PaginationResultVO CidLoad(Integer pageNo, Integer pCategoryId) throws BusinessException {
+    public ResponseVO CidLoad(Integer pageNo, Integer pCategoryId) throws BusinessException {
         pageNo = pageNo == null ? 1 : pageNo;
         if(pCategoryId!=null) {
             ProductInfoQuery productInfoQuery = new ProductInfoQuery();
             productInfoQuery.setPageNo(pageNo);
             productInfoQuery.setPCategoryId(pCategoryId);
             productInfoQuery.setStatus(Constants.ONE);
-            return productInfoService.findByPage(productInfoQuery);
+            return getSuccessResponseVO(productInfoService.findByPage(productInfoQuery));
         }
         throw new BusinessException("分类ID不能为空");
     }
 
     @GetMapping("/purseProduct")//购买模块
     @Transactional // 添加事务管理注解
-    public ResponseVO buy(String productId) throws BusinessException {
+    public void buy(HttpServletResponse response, String productId) throws BusinessException, IOException {
         if (getProductById(productId)){
             ProductInfoQuery productInfoQuery = new ProductInfoQuery();
             productInfoQuery.setProductId(productId);
             List<ProductInfo> list = productInfoService.findListByParam(productInfoQuery);//将查询结果放入list
+            String productName = list.get(0).getProductName();
+            String description = list.get(0).getProductDescription();
             BigDecimal price = list.get(0).getPrice();//获取价格
             Integer stock = list.get(0).getStock();//获取库存数
             Integer sale = list.get(0).getSalesCount();//获取销量
             if (stock>0) {
+                UuidTool s = new UuidTool();//获取生成唯一编码对象
+                Order order = new Order();
+                String orderNo = s.generateUniqueOrderId();//生成唯一订单编号
+
                 //Todo 引入沙箱模拟支付
+                pay(response, price, description, productName, orderNo);
+
+
 
                 ProductInfo productInfo = new ProductInfo();
                 productInfo.setProductId(productId);
                 productInfo.setStock(stock-Constants.ONE);//库存减一
                 productInfo.setSalesCount(sale+Constants.ONE);//销量加一
                 productInfoService.updateByProductId(productInfo,productId);//更新商品表
-                return getSuccessResponseVO("购买成功");
+
+                order.setOrderNo(orderNo);//设置唯一订单编号
+                order.setPrice(price);
+                order.setPayTime(new Date());
+                order.setPayer("fknwof26");//购买者
+                order.setPayee("wefnwofh456654");//收款方
+                orderService.add(order);//写入订单表
             }
             else {
                 throw new BusinessException("库存不足购买失败");
@@ -260,9 +308,8 @@ public class ProductController extends ABaseController {
         throw new BusinessException("不存在该商品");
     }
 
-    @GetMapping("/buy")//购买模块
-    public void payController(HttpServletRequest request, HttpServletResponse response, BigDecimal price) throws IOException {
-
+    public void pay(HttpServletResponse response, BigDecimal price,
+                   String orderNo, String description, String productName) throws IOException {
         //获得初始化的AlipayClient,负责调用支付宝接口
         AlipayClient alipayClient = new DefaultAlipayClient(AlipayConfig.gatewayUrl, AlipayConfig.app_id,
                 AlipayConfig.app_private_key, "json", AlipayConfig.charset,
@@ -270,27 +317,19 @@ public class ProductController extends ABaseController {
         //设置请求参数
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
         alipayRequest.setNotifyUrl(AlipayConfig.notify_url);
-        // 商户订单号
-        String out_trade_no ="14989sgsgsesf";
-        price= BigDecimal.valueOf(55);
-        // 付款金额
-        BigDecimal total_amount = price;
-        // 订单名称
-        String subject = "116486487fsejkbfsjbfs1";
-        // 商品描述
-        String body = "哈哈哈";
-        alipayRequest.setBizContent("{\"out_trade_no\":\"" + out_trade_no + "\"," + "\"total_amount\":\"" + total_amount
-                + "\"," + "\"subject\":\"" + subject + "\"," + "\"body\":\"" + body + "\","
-                + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
-        System.out.println("{\"out_trade_no\":\"" + out_trade_no + "\"," + "\"total_amount\":\"" + total_amount + "\","
-                + "\"subject\":\"" + subject + "\"," + "\"body\":\"" + body + "\","
-                + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
-
-        alipayRequest.setReturnUrl(AlipayConfig.return_url);
+        JSONObject bizContent = new JSONObject();
+        bizContent.put("out_trade_no",orderNo);//订单号
+        bizContent.put("total_amount",price);//交易金额
+        bizContent.put("subject","购买" + productName);//商品名
+        bizContent.put("body",description);//商品描述
+        bizContent.put("product_code","FAST_INSTANT_TRADE_PAY");//固定配置
+        alipayRequest.setBizContent(bizContent.toString());
+        //支付成功跳转
+        alipayRequest.setReturnUrl("http://localhost:7071/work/index.html");
         //请求
         String form = "";
         try {
-            form = alipayClient.pageExecute(alipayRequest,"GET").getBody();
+            form = alipayClient.pageExecute(alipayRequest).getBody();
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
@@ -302,14 +341,34 @@ public class ProductController extends ABaseController {
         response.getWriter().close();
     }
 
-    @RequestMapping("/payNotify")
-    @ResponseBody
-    public String payNotify(HttpServletResponse response){
 
-        return "success";
+    @PostMapping("/notify")
+    public void payNotify(HttpServletRequest request){
+        if (request.getParameter("trade_status").equals("TRADE_SUCCESS")){
+            System.out.println("=========支付宝异步回调—--——=");
+
+//        Map<String, String> params = new HashMap<>();
+//        Map<String, String[]> requestParams = request.getParameterMap();
+//        for (String name : requestParams.keySet()){
+//                params.put(name, request.getParameter(name));
+//        }
+//        String sign = params.get("sign");
+//        String content = AlipaySignature.getsignCheckContentV1(params);
+//        boolean checkSignature = AlipaySignature.rsa256Cherkcontent(content, sign, AlipayConfig.alipay_public_key, "UTF-8", AlipayConfig.sign_type);
+//        // 支付金验签
+//        if(checkSignature){
+//        // 验签通过，从沙箱传值回来
+//        System.out.println("交易名称："+ params.get("subject"));
+//        System.out.println("交易状态："+ params.get("trade_status"));
+//        System.out.println("支付宝交易凭证号：" + params.get("trade_no"));
+//        System.out.println("商户订单号；"+ params.get("out_trade_no"));
+//        System.out.println("交易金额："+ params.get("total_amount"));
+//        System.out.println("买家在支付宝唯-id:" + params.get("buyer_id"));
+//        System.out.println("买家付款时间："+ params.get("gnt_payment"));
+//        System.out.println("买家付款金额："+ params.get("buyer_pay_amount"));
+//    }
+        }
     }
-
-
 
     @RequestMapping("/searchProduct")
     public ResponseVO searchProduct(@NotEmpty String productName, Integer pageNo) throws BusinessException {
