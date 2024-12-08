@@ -12,6 +12,7 @@
 
     <!-- 扫描web相关的bean -->
     <context:component-scan base-package="com.work.controller"/>
+    <context:component-scan base-package="com.work.mappers"/>
 
     <!-- 开启SpringMVC注解模式 -->
     <mvc:annotation-driven validator="validator"/>

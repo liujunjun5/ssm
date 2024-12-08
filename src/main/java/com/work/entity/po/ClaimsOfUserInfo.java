@@ -1,15 +1,9 @@
 package com.work.entity.po;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.util.StringUtils;
-
-import java.math.BigDecimal;
-import java.util.Date;
+import org.apache.commons.codec.digest.DigestUtils;
 
 
 //ljz
@@ -63,6 +57,19 @@ public class ClaimsOfUserInfo {
 
         return this;
 
+    }
+
+    public ClaimsOfUserInfo encryptOfMd5(ClaimsOfUserInfo claimsOfUserInfo){
+
+        ClaimsOfUserInfo Md5ClaimsOfUserInfo = new ClaimsOfUserInfo();
+        Md5ClaimsOfUserInfo.setUserId(claimsOfUserInfo.getUserId());
+        Md5ClaimsOfUserInfo.setNickName(claimsOfUserInfo.getNickName());
+        Md5ClaimsOfUserInfo.setAvatar(claimsOfUserInfo.getAvatar());
+        Md5ClaimsOfUserInfo.setSex(claimsOfUserInfo.getSex());
+        Md5ClaimsOfUserInfo.setBirthday(claimsOfUserInfo.getBirthday()!=null?DigestUtils.md5Hex(claimsOfUserInfo.getBirthday()):null);
+        Md5ClaimsOfUserInfo.setPersonIntroduction(claimsOfUserInfo.getPersonIntroduction());
+        Md5ClaimsOfUserInfo.setNoticeInfo(claimsOfUserInfo.getNoticeInfo());
+        return Md5ClaimsOfUserInfo;
     }
 
 }

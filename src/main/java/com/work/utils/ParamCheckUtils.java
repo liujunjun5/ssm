@@ -1,12 +1,11 @@
 package com.work.utils;
 
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
-import com.work.entity.po.ClaimsOfUserInfo;
-import com.work.entity.po.UserInfo;
-import jdk.internal.dynalink.beans.StaticClass;
 import org.springframework.util.StringUtils;
+import com.work.entity.constants.Constants;
 
 import java.lang.reflect.Field;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 前端传参检验类
@@ -15,17 +14,41 @@ public class ParamCheckUtils {
 
     private static String Msg;
 
-    public static String checkLoginParam(String emailOrAccount, String password, String checkCode){
+    public static String checkLoginParam(String email, String password, String checkCode){
         Msg = null;
-        if(emailOrAccount.equals("")){
+
+        if(email.isEmpty()){
             Msg = "账号或邮箱不能为空";
-        }else if(password.equals("")){
+        }else if(password.isEmpty()){
             Msg = "请输入密码";
-        }else if(checkCode.equals("")){
+        }else if(checkCode.isEmpty()){
             Msg = "请输入验证码";
         }
+
         return Msg;
     }
+    public static String checkRegisterParam(String email, String password, String checkCode){
+
+        if(checkLoginParam(email,password,checkCode)!=null){
+            return checkLoginParam(email,password,checkCode);
+        }
+
+        Msg = null;
+        Pattern patEmail = Pattern.compile(Constants.REGEX_EMAIL);
+        Matcher matEmail = patEmail.matcher(email);
+        Pattern patPassword = Pattern.compile(Constants.REGEX_PASSWORD);
+        Matcher matPassword = patPassword.matcher(password);
+        if (!matEmail.matches()){
+            Msg="邮箱格式错误";
+        }else if(!matPassword.matches()){
+            Msg="密码格式错误";
+        }
+        return Msg;
+
+    }
+
+
+
 
     public static String areAllPropertiesEmpty(Object object) {
         Msg = null;

@@ -110,7 +110,29 @@ public class UserInfoQuery extends BaseQuery{
 	 */
 	private Integer theme;
 
-	public void setUserIdFuzzy(String userIdFuzzy) {
+
+
+
+	/**ljz
+	 * 登录查询对象初始化
+	 */
+	public UserInfoQuery (String email, String passwordMd5){
+
+		this.email = email;
+		this.password = passwordMd5;
+
+	}
+
+
+
+	public UserInfoQuery() {
+
+	}
+
+
+
+
+    public void setUserIdFuzzy(String userIdFuzzy) {
 		this.userIdFuzzy = userIdFuzzy;
 	}
 

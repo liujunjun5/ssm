@@ -13,6 +13,7 @@ public class Constants {
     public static final Long MB_SIZE = 1024 * 1024L;
 
     public static final String REGEX_PASSWORD = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$";
+    public static final String REGEX_EMAIL = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}$";
 
     public static final Integer REDIS_KEY_EXPIRES_ONE_SECONDS = 1000;
     public static final Integer REDIS_KEY_EXPIRES_ONE_MIN = 60000;
