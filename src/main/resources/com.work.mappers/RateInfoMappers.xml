@@ -12,17 +12,33 @@
         <!-- 分类ID -->
         <result column="rate" property="rate"/>
     </resultMap>
+    <!--通用查询列-->
+    <sql id="base_column_list">
+        product_id,user_id,rate
+    </sql>
 
     <update id="updateRateByProductId">
         update rate_info set rate=#{rate} where product_id=#{productId} and user_id=#{userId}
     </update>
+    <delete id="deleteRate">
+        delete from rate_info where product_id=#{productId} and user_id=#{userId}
+    </delete>
+
     <!-- 根据ProductId查询评分 -->
     <select id="findRateByProductId" resultType="java.lang.Integer">
         select rate from rate_info where product_id=#{productId}
     </select>
+
     <select id="findRate" resultType="java.lang.Integer">
-        select rate_id from rate_info where product_id=#{productId} and user_id=#{userId}
+        select rate from rate_info where product_id=#{productId} and user_id=#{userId}
     </select>
+
+    <select id="findRateList" resultMap="map">
+        select <include refid="base_column_list"/>
+        from rate_info
+        where user_id=#{userId}
+    </select>
+
     <insert id="addRateByProductId" parameterType="com.work.entity.po.RateInfo" >
         INSERT INTO rate_info
         <trim prefix="(" suffix=")" suffixOverrides=",">

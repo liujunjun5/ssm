@@ -91,14 +91,8 @@
 
 	<!--插入 （匹配有值的字段）-->
 	<insert id = "insert" parameterType="com.work.entity.po.BrandInfo">
-		<selectKey keyProperty="bean.brand_id" resultType="Integer" order="AFTER">
-			SELECT LAST_INSERT_ID()
-		</selectKey>
 		INSERT INTO brand_info
 		<trim prefix="(" suffix=")" suffixOverrides=",">
-			<if test="bean.brandId != null">
-				brand_id,
-			</if>
 			<if test="bean.brandName != null">
 				brand_name,
 			</if>
@@ -113,9 +107,6 @@
 			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
-			<if test="bean.brandId != null">
-				#{bean.brandId},
-			</if>
 			<if test="bean.brandName != null">
 				#{bean.brandName},
 			</if>
