@@ -34,6 +34,22 @@
     <!-- 支持上传文件 -->
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
 
+
+    <!--    配置接口跨域请求-->
+    <mvc:cors>
+        <!--
+        allowed-origins="*" 表示跨域方案对所有请求都生效
+        allowed-methods="POST,GET,DELETE,PUT" 允许对请求方式
+        allowed-headers="Content-Type, Access-Control-Allow-Headers,Authorization,X-Requested-with" 允许对请求头
+        allow-credentials="true" 表示是否可以将对请求的响应暴露给页面
+         -->
+        <mvc:mapping path="/**" allowed-origins="*"
+                     allowed-methods="POST,GET,DELETE,PUT"
+                     allowed-headers="Content-Type, Access-Control-Allow-Headers,Authorization,X-Requested-with"
+                     allow-credentials="true"
+        />
+    </mvc:cors>
+
     <!-- 拦截器 -->
 <!--    <mvc:interceptors>-->
 <!--        <mvc:interceptor>-->
