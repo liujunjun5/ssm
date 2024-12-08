@@ -148,13 +148,13 @@ public class LoginOfUserController extends ABaseController{
 
     }
 
-    @GetMapping("/test")
-    public ResponseVO test(User user){
-        log.info("451165651");
-
-        return getServerErrorResponseVO(user);
-
-    }
+//    @GetMapping("/test")
+//    public ResponseVO test(User user){
+//        log.info("451165651");
+//
+//        return getServerErrorResponseVO(user);
+//
+//    }
 
 //    public ResponseVO updateUserInfo(@RequestParam(required = false) String nickName,
 //                                     @RequestParam(required = false) String avatar,
