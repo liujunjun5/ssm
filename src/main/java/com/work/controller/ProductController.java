@@ -180,9 +180,24 @@ public class ProductController extends ABaseController {
     }
 
     @GetMapping("/purseProduct")
-    public ResponseVO buy(@NotEmpty String productId){
+    public ResponseVO buy(@NotEmpty String  productId){
 
         //Todo 引入沙箱模拟支付
         return null;
+    }
+
+    @RequestMapping("/searchProduct")
+    public ResponseVO searchProduct(@NotEmpty String productName, Integer pageNo) throws BusinessException {
+        pageNo = pageNo == null ? 1 : pageNo;
+        ProductInfoQuery productInfoQuery = new ProductInfoQuery();
+        productInfoQuery.setProductNameFuzzy(productName);
+        productInfoQuery.setPageNo(pageNo);
+        productInfoQuery.setStatus(Constants.ONE);
+//        List<ProductInfo> productInfos = productInfoService.findByPage(productInfoQuery);
+        PaginationResultVO<ProductInfo> productInfos = productInfoService.findByPage(productInfoQuery);
+        if (productInfos == null) {
+            throw new BusinessException("商品不存在");
+        }
+        return getSuccessResponseVO(productInfos);
     }
 }
