@@ -5,6 +5,7 @@ import com.work.entity.po.BrandInfo;
 import com.work.entity.po.ProductInfo;
 import com.work.entity.query.BrandInfoQuery;
 import com.work.entity.query.ProductInfoQuery;
+import com.work.entity.vo.PaginationResultVO;
 import com.work.entity.vo.ResponseVO;
 import com.work.exception.BusinessException;
 import com.work.service.BrandInfoService;
@@ -50,21 +51,6 @@ public class AdminController extends ABaseController {
         }
     }
 
-    @GetMapping("/product/RecommendProduct")//推荐模块（可以不上架但依然推荐）
-    public ResponseVO recommend(String productId) throws BusinessException {
-        if (productId.isEmpty()) {
-            throw new BusinessException("商品ID不能为空");
-        }
-        if(getProductByProductId(productId)){//找到对应产品后执行推荐
-            ProductInfo productInfo = new ProductInfo();
-            productInfo.setTags("true");
-            productInfoService.updateByProductId(productInfo,productId);//修改推荐
-            return getSuccessResponseVO("推荐成功");
-        }else {
-            throw new BusinessException("不存在该商品ID，无法推荐");
-        }
-    }
-
     @PostMapping("/brand/saveBrand")//增加品牌模块
     public ResponseVO save(String brandDesc, String brandName) throws BusinessException {
         if(!brandName.isEmpty() && brandName.length()<11 && brandDesc.length()<256) {
@@ -87,11 +73,10 @@ public class AdminController extends ABaseController {
         throw new BusinessException("品牌ID不能为空");
     }
     @GetMapping("/brand/getBrand")//获取品牌列表模块
-    public ResponseVO getBrand(Integer pageNo){
-        pageNo = pageNo == null ? 1 : pageNo;
+    public PaginationResultVO getBrand(Integer pageNo){
         BrandInfoQuery brandInfoQuery = new BrandInfoQuery();
         brandInfoQuery.setPageNo(pageNo);
-        return getSuccessResponseVO(brandInfoService.findByPage(brandInfoQuery));
+        return brandInfoService.findByPage(brandInfoQuery);
     }
 
     @PostMapping("/brand/postBrand")//修改品牌模块
