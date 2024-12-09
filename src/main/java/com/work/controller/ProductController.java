@@ -1,10 +1,7 @@
 package com.work.controller;
 
 import com.work.entity.constants.Constants;
-import com.work.entity.po.BrandInfo;
-import com.work.entity.po.Order;
-import com.work.entity.po.ProductInfo;
-import com.work.entity.po.RateInfo;
+import com.work.entity.po.*;
 import com.work.entity.query.BrandInfoQuery;
 import com.work.entity.query.ProductInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
@@ -45,7 +42,14 @@ public class ProductController extends ABaseController {
     @Autowired
     private BrandInfoService brandInfoService;
 
-    //通过ID找上架的商品
+    @Autowired
+    private PayService payService;
+
+//    ClaimsOfUserInfo claimsOfUserInfo = userInfoService.getByToken(request,Constants.TOKEN_KEY,"user:",ClaimsOfUserInfo.class);
+//    String userId = claimsOfUserInfo.getUserId();
+    String userId = "牛俊";
+
+    //通过商品ID找上架的商品
     public Boolean getProductById(String productId) throws BusinessException {
         if (productId.isEmpty()) {
             throw new BusinessException("商品ID不能为空");
@@ -54,7 +58,19 @@ public class ProductController extends ABaseController {
         productInfoQuery.setProductId(productId);
         productInfoQuery.setStatus(Constants.ONE);
         List<ProductInfo> listProduct = productInfoService.findListByParam(productInfoQuery);//将查询结果放入listProduct
+        listProduct.get(0).getProductUser();
         return !listProduct.isEmpty();//true则为找到该上架商品
+    }
+
+    //根据商品ID找对应商家
+    public String getProductUser(String productId) throws BusinessException {
+        if (productId.isEmpty()) {
+            throw new BusinessException("商品ID不能为空");
+        }
+        ProductInfoQuery productInfoQuery = new ProductInfoQuery();
+        productInfoQuery.setProductId(productId);
+        List<ProductInfo> listProduct = productInfoService.findListByParam(productInfoQuery);//将查询结果放入listProduct
+        return listProduct.get(0).getProductUser();//获取对应商家
     }
 
     @PostMapping("/addProduct")//添加未审核商品模块
@@ -69,10 +85,8 @@ public class ProductController extends ABaseController {
         if(!getProductById(productId)){//找不到这个产品才可以添加
             ProductInfo productInfo = new ProductInfo();
             //TODO 从redis拿取当前用户的信息 获得userId写入表中
-//            ClaimsOfUserInfo claimsOfUserInfo = userInfoService.getByTokenFromRedis(cookie.getValue());
-//            claimsOfUserInfo.getUserId();
             productInfo.setProductId(productId);
-            productInfo.setProductUser("boss");
+            productInfo.setProductUser(userId);
             productInfo.setPCategoryId(pCategoryId);
             productInfo.setCategoryId(categoryId);
             productInfo.setImageUrl(productCover);
@@ -150,9 +164,12 @@ public class ProductController extends ABaseController {
     @GetMapping("/delProductByProductId")//删除商品模块
     public ResponseVO delProductByProductId(String productId) throws BusinessException {
         if(getProductById(productId)){//找到对应产品后执行删除
-            //ToDo 判断用户id是否相同
+            //判断用户id是否相同
+            if(getProductUser(productId)==userId){
             productInfoService.deleteByProductId(productId);
             return getSuccessResponseVO("删除成功");
+            }
+            else throw new BusinessException("非该商品拥有者，无法删除");
         }else {
             throw new BusinessException("不存在该商品ID，无法删除");
         }
@@ -163,23 +180,26 @@ public class ProductController extends ABaseController {
                                     @Size(max = 30, message = "描述不得超过30字") String productDescription, BigDecimal price,
                                     Integer brandId, Integer stock, String tags) throws BusinessException {
         if (getProductById(productId)) {//找到这个产品
-            //TODO 从redis拿取当前用户的信息 获得userId并验证(通过产品id找到对应用户id进行比对一致方可修改)
             if (pCategoryId==null || productName.isEmpty() || price==null ||stock==null || brandId==null) {
                 throw new BusinessException("必要信息不能为空");
             }
-            ProductInfo productInfo = new ProductInfo();
-            productInfo.setPCategoryId(pCategoryId);
-            productInfo.setCategoryId(categoryId);
-            productInfo.setImageUrl(imageUrl);
-            productInfo.setProductName(productName);
-            productInfo.setBrandId(brandId);
-            productInfo.setProductDescription(productDescription);
-            productInfo.setPrice(price);
-            productInfo.setLastUpdateTime(new Date());
-            productInfo.setStock(stock);
-            productInfo.setTags(tags);
-            productInfoService.updateByProductId(productInfo, productId);
-            return getProductByProductId(productId);
+            //从redis拿取当前用户的信息 获得userId并验证(通过产品id找到对应用户id进行比对一致方可修改)
+            if (getProductUser(productId)==userId){
+                ProductInfo productInfo = new ProductInfo();
+                productInfo.setPCategoryId(pCategoryId);
+                productInfo.setCategoryId(categoryId);
+                productInfo.setImageUrl(imageUrl);
+                productInfo.setProductName(productName);
+                productInfo.setBrandId(brandId);
+                productInfo.setProductDescription(productDescription);
+                productInfo.setPrice(price);
+                productInfo.setLastUpdateTime(new Date());
+                productInfo.setStock(stock);
+                productInfo.setTags(tags);
+                productInfoService.updateByProductId(productInfo, productId);
+                return getProductByProductId(productId);
+            }
+            else throw new BusinessException("非该商品拥有者，无法修改");
         } else {
             throw new BusinessException("不存在该商品");
         }
@@ -194,8 +214,7 @@ public class ProductController extends ABaseController {
             RateInfo rateInfo = new RateInfo();
             rateInfo.setProductId(productId);
             rateInfo.setRate(rate);
-            rateInfo.setUserId("牛俊");
-            // ToDo 读取用户信息
+            rateInfo.setUserId(userId);
             if(rateInfoService.findRate(productId,rateInfo.getUserId())==null) {
                 rateInfoService.addRateByProductId(rateInfo);//根据用户ID和商品ID没找到评分记录就新增
             }else {
@@ -210,9 +229,7 @@ public class ProductController extends ABaseController {
 
     @GetMapping("/findRate")//查询历史评分
     public ResponseVO findRate() throws BusinessException {
-        String userId = null;
-        //ToDo 获取userId
-        List<RateInfo> rateList = rateInfoService.findRateList("牛俊");
+        List<RateInfo> rateList = rateInfoService.findRateList(userId);
         System.out.println(rateList);
         if (!rateList.isEmpty()) {
             return getSuccessResponseVO(rateList);
@@ -222,14 +239,12 @@ public class ProductController extends ABaseController {
 
     @GetMapping("/delRate")//删除历史评分
     public ResponseVO delRate(String productId) throws BusinessException {
-        String userId = "牛俊";
-        //ToDo 获取userId
         if(getProductById(productId) && rateInfoService.findRate(productId,userId)!=null) {
             rateInfoService.deleteRate(productId,userId);
             updateProductInfo(productId);
             return getSuccessResponseVO("删除成功");
         }
-        throw new BusinessException("没有对应记录，删除失败");
+        throw new BusinessException("没有对应记录，无法删除");
     }
 
     //根据商品ID求平均评分并写入product_info表
@@ -295,7 +310,7 @@ public class ProductController extends ABaseController {
                     order.setProductId(productId);//交易产品
                     order.setPayTime(new Date());//交易时间
                     //ToDo 拿userid
-                    order.setPayer("牛俊");//购买者
+                    order.setPayer(userId);//购买者
                     order.setPayee(payee);//收款方
                     orderService.add(order);//写入订单表
                     return getSuccessResponseVO("支付成功");
@@ -309,8 +324,6 @@ public class ProductController extends ABaseController {
     }
 
 
-    @Autowired
-    private PayService payService;
 
     @PostMapping("pay")
     public String creatPay(String id, String price, String name) {
@@ -319,15 +332,16 @@ public class ProductController extends ABaseController {
 
     @GetMapping("/findOrder")//查询订单模块
     public ResponseVO findOrder() throws BusinessException {
-        //ToDo 那userid
-        List<Order> listOrder= orderService.findOrder("牛俊");//找到订单表
+        List<Order> listOrder= orderService.findOrder(userId);//找到订单表
         if (!listOrder.isEmpty()) {
             return getSuccessResponseVO(listOrder);
         }else throw new BusinessException("没有订单");
     }
     @PostMapping("/notify")
-    public String payNotify(){
-        return "notify";
+    public void payNotify(String trade_no, String total_amount, String trade_status){
+        System.out.println("支付宝订单编号：" + trade_no);
+        System.out.println("支付宝订单编号：" + total_amount);
+        System.out.println("支付宝订单编号：" + trade_status);
     }
 
     @RequestMapping("/searchProduct")
