@@ -82,6 +82,7 @@ public class ProductController extends ABaseController {
             productInfo.setProductName(productName);
             productInfo.setStock(stock);
             productInfo.setBrandId(brandId);
+            productInfo.setTags("false");//默认不推荐
             productInfo.setProductDescription(description);
             productInfo.setPrice(price);
             productInfo.setStatus(Constants.THREE);//新增商品状态统一设置为未审核
@@ -114,6 +115,7 @@ public class ProductController extends ABaseController {
         return getSuccessResponseVO(productInfoService.findByPage(productInfoQuery));
     }
 
+    //返回品牌信息
     public List<BrandInfo> findById(Integer brandId) throws BusinessException{
         if (brandId==null) {
             throw new BusinessException("没有对应品牌");
