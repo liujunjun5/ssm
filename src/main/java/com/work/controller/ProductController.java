@@ -1,13 +1,10 @@
 package com.work.controller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alipay.api.AlipayApiException;
-import com.alipay.api.AlipayClient;
-import com.alipay.api.DefaultAlipayClient;
-import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.work.config.AlipayConfig;
 import com.work.entity.constants.Constants;
-import com.work.entity.po.*;
+import com.work.entity.po.BrandInfo;
+import com.work.entity.po.Order;
+import com.work.entity.po.ProductInfo;
+import com.work.entity.po.RateInfo;
 import com.work.entity.query.BrandInfoQuery;
 import com.work.entity.query.ProductInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
@@ -18,13 +15,13 @@ import com.work.utils.UuidTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +45,7 @@ public class ProductController extends ABaseController {
     @Autowired
     private BrandInfoService brandInfoService;
 
-    //通过ID找商品
+    //通过ID找上架的商品
     public Boolean getProductById(String productId) throws BusinessException {
         if (productId.isEmpty()) {
             throw new BusinessException("商品ID不能为空");
@@ -270,14 +267,14 @@ public class ProductController extends ABaseController {
 
     @GetMapping("/purseProduct")//购买模块
     @Transactional // 添加事务管理注解
-    public void buy(HttpServletResponse response, String productId) throws BusinessException, IOException {
+    public ResponseVO buy(String productId) throws BusinessException {
         if (getProductById(productId)){
             ProductInfoQuery productInfoQuery = new ProductInfoQuery();
             productInfoQuery.setProductId(productId);
             List<ProductInfo> list = productInfoService.findListByParam(productInfoQuery);//将查询结果放入list
-            String productName = list.get(0).getProductName();
-            String description = list.get(0).getProductDescription();
+            String payee = list.get(0).getProductUser();//获取商户
             BigDecimal price = list.get(0).getPrice();//获取价格
+            String productName = list.get(0).getProductName();
             Integer stock = list.get(0).getStock();//获取库存数
             Integer sale = list.get(0).getSalesCount();//获取销量
             if (stock>0) {
@@ -286,22 +283,23 @@ public class ProductController extends ABaseController {
                 String orderNo = s.generateUniqueOrderId();//生成唯一订单编号
 
                 //Todo 引入沙箱模拟支付
-                pay(response, price, description, productName, orderNo);
+                if (!creatPay(orderNo, String.valueOf(price), productName).isEmpty()) {
 
-
-
-                ProductInfo productInfo = new ProductInfo();
-                productInfo.setProductId(productId);
-                productInfo.setStock(stock-Constants.ONE);//库存减一
-                productInfo.setSalesCount(sale+Constants.ONE);//销量加一
-                productInfoService.updateByProductId(productInfo,productId);//更新商品表
-
-                order.setOrderNo(orderNo);//设置唯一订单编号
-                order.setPrice(price);
-                order.setPayTime(new Date());
-                order.setPayer("fknwof26");//购买者
-                order.setPayee("wefnwofh456654");//收款方
-                orderService.add(order);//写入订单表
+                    ProductInfo productInfo = new ProductInfo();
+                    productInfo.setProductId(productId);
+                    productInfo.setStock(stock - Constants.ONE);//库存减一
+                    productInfo.setSalesCount(sale + Constants.ONE);//销量加一
+                    productInfoService.updateByProductId(productInfo, productId);//更新商品表
+                    order.setOrderNo(orderNo);//设置唯一订单编号
+                    order.setPrice(price);//交易金额
+                    order.setProductId(productId);//交易产品
+                    order.setPayTime(new Date());//交易时间
+                    //ToDo 拿userid
+                    order.setPayer("牛俊");//购买者
+                    order.setPayee(payee);//收款方
+                    orderService.add(order);//写入订单表
+                    return getSuccessResponseVO("支付成功");
+                }else throw new BusinessException("支付出错，购买失败");
             }
             else {
                 throw new BusinessException("库存不足购买失败");
@@ -310,66 +308,26 @@ public class ProductController extends ABaseController {
         throw new BusinessException("不存在该商品");
     }
 
-    public void pay(HttpServletResponse response, BigDecimal price,
-                   String orderNo, String description, String productName) throws IOException {
-        //获得初始化的AlipayClient,负责调用支付宝接口
-        AlipayClient alipayClient = new DefaultAlipayClient(AlipayConfig.gatewayUrl, AlipayConfig.app_id,
-                AlipayConfig.app_private_key, "json", AlipayConfig.charset,
-                AlipayConfig.alipay_public_key, AlipayConfig.sign_type);
-        //设置请求参数
-        AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
-        alipayRequest.setNotifyUrl(AlipayConfig.notify_url);
-        JSONObject bizContent = new JSONObject();
-        bizContent.put("out_trade_no",orderNo);//订单号
-        bizContent.put("total_amount",price);//交易金额
-        bizContent.put("subject","购买" + productName);//商品名
-        bizContent.put("body",description);//商品描述
-        bizContent.put("product_code","FAST_INSTANT_TRADE_PAY");//固定配置
-        alipayRequest.setBizContent(bizContent.toString());
-        //支付成功跳转
-        alipayRequest.setReturnUrl("http://localhost:7071/work/index.html");
-        //请求
-        String form = "";
-        try {
-            form = alipayClient.pageExecute(alipayRequest).getBody();
-        } catch (AlipayApiException e) {
-            e.printStackTrace();
-        }
-        // 将支付表单嵌入HTML并输出到页面
-        System.out.println(form);
-        response.setContentType("text/html;charset=" + AlipayConfig.charset);
-        response.getWriter().write(form);//直接将完整的表单html输出到页面
-        response.getWriter().flush();
-        response.getWriter().close();
+
+    @Autowired
+    private PayService payService;
+
+    @PostMapping("pay")
+    public String creatPay(String id, String price, String name) {
+        return payService.pay(id,price,name);
     }
 
-
+    @GetMapping("/findOrder")//查询订单模块
+    public ResponseVO findOrder() throws BusinessException {
+        //ToDo 那userid
+        List<Order> listOrder= orderService.findOrder("牛俊");//找到订单表
+        if (!listOrder.isEmpty()) {
+            return getSuccessResponseVO(listOrder);
+        }else throw new BusinessException("没有订单");
+    }
     @PostMapping("/notify")
-    public void payNotify(HttpServletRequest request){
-        if (request.getParameter("trade_status").equals("TRADE_SUCCESS")){
-            System.out.println("=========支付宝异步回调—--——=");
-
-//        Map<String, String> params = new HashMap<>();
-//        Map<String, String[]> requestParams = request.getParameterMap();
-//        for (String name : requestParams.keySet()){
-//                params.put(name, request.getParameter(name));
-//        }
-//        String sign = params.get("sign");
-//        String content = AlipaySignature.getsignCheckContentV1(params);
-//        boolean checkSignature = AlipaySignature.rsa256Cherkcontent(content, sign, AlipayConfig.alipay_public_key, "UTF-8", AlipayConfig.sign_type);
-//        // 支付金验签
-//        if(checkSignature){
-//        // 验签通过，从沙箱传值回来
-//        System.out.println("交易名称："+ params.get("subject"));
-//        System.out.println("交易状态："+ params.get("trade_status"));
-//        System.out.println("支付宝交易凭证号：" + params.get("trade_no"));
-//        System.out.println("商户订单号；"+ params.get("out_trade_no"));
-//        System.out.println("交易金额："+ params.get("total_amount"));
-//        System.out.println("买家在支付宝唯-id:" + params.get("buyer_id"));
-//        System.out.println("买家付款时间："+ params.get("gnt_payment"));
-//        System.out.println("买家付款金额："+ params.get("buyer_pay_amount"));
-//    }
-        }
+    public String payNotify(){
+        return "notify";
     }
 
     @RequestMapping("/searchProduct")

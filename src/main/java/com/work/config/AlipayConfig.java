@@ -15,11 +15,11 @@ public class AlipayConfig {
     //支付宝公钥
     public static String alipay_public_key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArpdCluEH5Y5F5knDXxr0ly+6TI/+vpFselZ8x9TDS/WPlzyRGRdkFIQveBU7VlEj+xtLbMq3UxBP6tdJE+30mG4xv9ufQx8qck+w7qNaYgwpM8LPnlmrXcD3GL7Oz3IAuRewlEQhBKQCb3LJOyvKIN1RV6qSwAZLccgELPvxCwZZGeJkf0lriNqLh5MEqVksehHJcP4hK27UgK/rN9oKBDnkbE2RzUyZE8j4es00+F8H3d9EmxTM1fZQjAKmIKYDdSnSmRakB5XPCSUuha14iV0cKaeYveXregjQrwdwrE9iXSgEUyJkfwpZztPBXO6yBTM9skJCtmw04dm5aWs6DQIDAQAB";
     // 服务器异步通知页面路径，
-    public static String notify_url = "http://dhxmts.natappfree.cc/work/product/notify";
+    public static String notify_url = "http://9i3smz.natappfree.cc/work/product/notify";
     // 签名方式
     public static String sign_type = "RSA2";
     // 字符编码格式
-    public static String charset = "utf-8";
+    public static String charset = "UTf-8";
     // 支付宝网关
     public static String gatewayUrl = "https://openapi-sandbox.dl.alipaydev.com/gateway.do";
 

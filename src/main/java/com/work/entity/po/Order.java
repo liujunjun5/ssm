@@ -7,15 +7,17 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 public class Order {
-    public Integer getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(Integer orderId) {
-        this.orderId = orderId;
-    }
-
     private  Integer orderId;
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    private String productId;
     private String orderNo;
     private BigDecimal price;
     private String payer;
@@ -68,7 +70,7 @@ public class Order {
     @Override
     public String toString() {
         return "Order{" +
-                "orderId=" + orderId +
+                ", productId='" + productId + '\'' +
                 ", orderNo='" + orderNo + '\'' +
                 ", price=" + price +
                 ", payer='" + payer + '\'' +

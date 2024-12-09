@@ -16,10 +16,13 @@
         <result column="payer" property="payer"/>
         <!-- 收款人 -->
         <result column="payee" property="payee"/>
+        <!-- 商品ID -->
+        <result column="product_id" property="productId"/>
+
     </resultMap>
     <!--通用查询列-->
     <sql id="base_column_list">
-order_id,order_no,price,pay_time
+order_no,price,pay_time,payee,payer,product_id
     </sql>
 
 
@@ -31,6 +34,9 @@ order_id,order_no,price,pay_time
             </if>
             <if test="bean.price != null">
                 price,
+            </if>
+            <if test="bean.productId != null">
+                product_id,
             </if>
             <if test="bean.payTime != null">
                 pay_time,
@@ -49,6 +55,9 @@ order_id,order_no,price,pay_time
             <if test="bean.price != null">
                 #{bean.price},
             </if>
+            <if test="bean.productId != null">
+                #{bean.productId},
+            </if>
             <if test="bean.payTime != null">
                 #{bean.payTime},
             </if>
@@ -60,5 +69,11 @@ order_id,order_no,price,pay_time
             </if>
         </trim>
     </insert>
+    <select id="findOrder" resultMap="oderMap">
+        select
+            <include refid="base_column_list"/>
+        from `order`
+        where payer=#{payer}
+    </select>
 
 </mapper>
