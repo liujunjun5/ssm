@@ -99,4 +99,12 @@ public class UserMessageServiceImpl implements UserMessageService {
 		return this.userMessageMappers.deleteByMessageId(messageId);
 	}
 
+	/**
+	 * 查找最大messageId
+	 */
+	public Integer findMaxMessageId(){
+		Integer MaxMessageId = this.userMessageMappers.findMaxMessageId();
+		return MaxMessageId==null?0:MaxMessageId;
+	};
+
 }

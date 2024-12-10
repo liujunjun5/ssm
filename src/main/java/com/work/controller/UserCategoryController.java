@@ -4,6 +4,7 @@ import com.work.entity.constants.Constants;
 import com.work.entity.po.CategoryInfo;
 import com.work.entity.query.CategoryInfoQuery;
 import com.work.entity.vo.PaginationResultVO;
+import com.work.entity.vo.ResponseVO;
 import com.work.service.CategoryInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +18,7 @@ public class UserCategoryController extends ABaseController{
         private CategoryInfoService categoryInfoService;
 
         @RequestMapping("/loadCategory")
-        public PaginationResultVO<CategoryInfo> loadCategory(Integer pageNo) {
+        public ResponseVO loadCategory(Integer pageNo) {
             //判断页面值是否输入
             pageNo = (pageNo == 0 || pageNo == null) ? 1 : pageNo;
             // 创建查询对象，并设置分页参数
@@ -29,7 +30,7 @@ public class UserCategoryController extends ABaseController{
             PaginationResultVO<CategoryInfo> result = categoryInfoService.findByPage(query);
 
             // 返回分页结果
-            return result;
+            return getSuccessResponseVO(result);
         }
 
 }

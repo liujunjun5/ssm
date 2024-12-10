@@ -19,7 +19,7 @@ public class AdminCategoryController extends ABaseController {
     private CategoryInfoService categoryInfoService;
 
     @RequestMapping("/category/loadCategory")
-    public PaginationResultVO<CategoryInfo> loadCategory(Integer pageNo) {
+    public ResponseVO loadCategory(Integer pageNo) {
         //判断页面值是否输入
         pageNo = ( pageNo==0 || pageNo==null ) ? 1 : pageNo;
         // 创建查询对象，并设置分页参数
@@ -31,7 +31,7 @@ public class AdminCategoryController extends ABaseController {
         PaginationResultVO<CategoryInfo> result = categoryInfoService.findByPage(query);
 
         // 返回分页结果
-        return result;
+        return getSuccessResponseVO(result) ;
     }
 
     @RequestMapping("/category/saveCategory")
@@ -59,7 +59,7 @@ public class AdminCategoryController extends ABaseController {
         }catch (NumberFormatException e) {//数据转换错误
             throw new BusinessException("传入的数据无效", e);
         }catch(DuplicateKeyException e){//违反主键约束
-            new BusinessException("分类ID已存在", e);
+            throw new BusinessException("分类ID已存在", e);
         }catch (Exception e){//其他错误
             throw new BusinessException("添加分类数据过程出错",e);
         }

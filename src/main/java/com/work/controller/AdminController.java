@@ -1,11 +1,13 @@
 package com.work.controller;
 
 
+import com.work.annotation.RecordUserMessage;
 import com.work.entity.po.BrandInfo;
 import com.work.entity.po.ProductInfo;
 import com.work.entity.query.BrandInfoQuery;
 import com.work.entity.query.ProductInfoQuery;
 import com.work.entity.vo.ResponseVO;
+import com.work.enums.MessageTypeEnum;
 import com.work.exception.BusinessException;
 import com.work.service.BrandInfoService;
 import com.work.service.ProductInfoService;
@@ -35,7 +37,10 @@ public class AdminController extends ABaseController {
         List<ProductInfo> listProduct = productInfoService.findListByParam(productInfoQuery);//将查询结果放入listProduct
         return !listProduct.isEmpty();//true则为找到该商品
     }
+
+
     @GetMapping("/product/audit")//审核模块
+    @RecordUserMessage(messageType = MessageTypeEnum.SYS)
     public ResponseVO audit(String productId, Integer status) throws BusinessException {
         if (productId.isEmpty() || status==null || status<0 || status>2) {
             throw new BusinessException("必要信息不能为空或状态只能为0,1,2");

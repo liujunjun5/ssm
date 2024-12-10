@@ -1,6 +1,7 @@
 package com.work.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.work.annotation.RecordUserMessage;
 import com.work.entity.constants.Constants;
 import com.work.entity.po.ClaimsOfUserInfo;
 import com.work.entity.po.ProductComment;
@@ -8,10 +9,13 @@ import com.work.entity.po.ProductInfo;
 import com.work.entity.query.ProductCommentQuery;
 import com.work.entity.vo.PaginationResultVO;
 import com.work.entity.vo.ResponseVO;
+import com.work.enums.MessageTypeEnum;
 import com.work.exception.BusinessException;
 import com.work.service.ProductCommentService;
 import com.work.service.ProductInfoService;
 
+import com.work.service.UserInfoService;
+import com.work.utils.CookieUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,16 +30,19 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/comment")
+//@RecordUserMessage(messageType = MessageTypeEnum.COMMENT)
 public class ProductCommentController extends ABaseController{
     @Autowired
     private ProductCommentService productCommentService;
     @Autowired
     private ProductInfoService productInfoService;
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private UserInfoService userInfoService;
 
 
+    //UserMessageOperationAspect切面类中使用切入点表达式@annotation...故此处注释方法
     @RequestMapping("/postComment")
+    @RecordUserMessage(messageType = MessageTypeEnum.COMMENT)
     public ResponseVO postComment(String productId, String content, String imgPath,HttpServletRequest request) throws BusinessException {
 
         //创建商品对象，用以接收查找到的商品
@@ -67,22 +74,12 @@ public class ProductCommentController extends ABaseController{
         //设置回复人ID
         //comment.setReplyUserId();
 
-        //从请求中获取token字段，得到redis中的key
-        String key = "用户:" + getTokenFromCookie(request);
-        //通过key得到对应对象json格式的字符串
-        String jsonStr = redisTemplate.opsForValue().get(key);
-        //反解json格式获得用户对象
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            ClaimsOfUserInfo claimsOfUserInfo = objectMapper.readValue(jsonStr, ClaimsOfUserInfo.class);
+            //获取用户对象
+            String redisUserInfoKey = CookieUtils.getCookie(request,Constants.TOKEN_KEY);
+            ClaimsOfUserInfo claimsOfUserInfo = userInfoService.getByTokenOfUser(redisUserInfoKey);
             //设置用户ID
             comment.setUserId(claimsOfUserInfo.getUserId());
-
-            //设置redis关键字
-            //保存评论对象至redis
-//            key = "productComment:" + getTokenFromCookie(request);
-//            jsonStr = objectMapper.writeValueAsString(comment);
-//            redisTemplate.opsForValue().set(key, jsonStr);
         } catch (Exception e) {
             throw new BusinessException("处理解析错误",e);
             // 处理解析错误
@@ -124,13 +121,13 @@ public class ProductCommentController extends ABaseController{
                     // 将commentData.getList()转换为流
                     // 使用filter方法过滤流中的元素
                     // 过滤条件：属于ProductComment类且TopType为1
-                    .filter(comment -> comment instanceof ProductComment && ((ProductComment) comment).getTopType() == 1)
+                    .filter(comment -> comment instanceof ProductComment && comment.getTopType() == 1)
                     // 将过滤后的流元素收集到一个新的列表中
                     .collect(Collectors.toList());
 
             // 过滤置顶的评论，保留其他评论
             List<ProductComment> otherCommentList = commentData.getList().stream()
-                    .filter(comment -> !(comment instanceof ProductComment && ((ProductComment) comment).getTopType() == 1))
+                    .filter(comment -> !(comment instanceof ProductComment && comment.getTopType() == 1))
                     .collect(Collectors.toList());
 
             // 将置顶评论列表与未置顶评论列表组合，置顶评论列表在前
@@ -186,16 +183,5 @@ public class ProductCommentController extends ABaseController{
         }
     }
 
-    public String getTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("Jwt_token".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
 }
 

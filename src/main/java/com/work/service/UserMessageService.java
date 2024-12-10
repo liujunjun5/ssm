@@ -61,4 +61,9 @@ public interface UserMessageService {
 	 */
 	Integer deleteByMessageId(Integer messageId);
 
+	/**
+	 * 查找最大messageId
+	 */
+	Integer findMaxMessageId();
+
 }
