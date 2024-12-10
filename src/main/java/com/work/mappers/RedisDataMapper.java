@@ -23,8 +23,9 @@ public class RedisDataMapper {
 
         if(value.getClass() != String.class){
             stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(value),time, TimeUnit.SECONDS);
+        }else {
+            stringRedisTemplate.opsForValue().set(key, (String) value, time, TimeUnit.SECONDS);
         }
-        stringRedisTemplate.opsForValue().set(key, (String) value,time, TimeUnit.SECONDS);
 
     }
     public void setData(String key,String value){
