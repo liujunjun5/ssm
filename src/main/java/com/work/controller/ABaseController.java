@@ -56,27 +56,5 @@ public class ABaseController {
         vo.setData(t);
         return vo;
     }
-
-
-    /**ljz
-     * token清除
-     **/
-    public void cleanJwtCookie(HttpServletResponse response,
-                               HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return;
-        }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(Constants.TOKEN_KEY)) {
-
-                stringRedisTemplate.delete("user:"+cookie.getValue());
-                cookie.setMaxAge(0);
-                cookie.setPath("/");
-                response.addCookie(cookie);
-                break;
-            }
-        }
-    }
     
 }

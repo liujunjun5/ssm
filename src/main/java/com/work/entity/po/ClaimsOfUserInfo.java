@@ -46,19 +46,6 @@ public class ClaimsOfUserInfo {
      */
     private String noticeInfo;
 
-    public ClaimsOfUserInfo addUserInfo(ClaimsOfUserInfo claimsOfUserInfo){
-
-        this.nickName=claimsOfUserInfo.getNickName()!=null?claimsOfUserInfo.getNickName():null;
-        this.avatar=claimsOfUserInfo.getAvatar()!=null?claimsOfUserInfo.getAvatar():null;
-        this.sex=claimsOfUserInfo.getSex()!=null?claimsOfUserInfo.getSex():null;
-        this.birthday=claimsOfUserInfo.getBirthday()!=null?claimsOfUserInfo.getBirthday():null;
-        this.personIntroduction=claimsOfUserInfo.getPersonIntroduction()!=null?claimsOfUserInfo.getPersonIntroduction():null;
-        this.noticeInfo=claimsOfUserInfo.getNoticeInfo()!=null?claimsOfUserInfo.getNoticeInfo():null;
-
-        return this;
-
-    }
-
     public ClaimsOfUserInfo encryptOfMd5(ClaimsOfUserInfo claimsOfUserInfo){
 
         ClaimsOfUserInfo Md5ClaimsOfUserInfo = new ClaimsOfUserInfo();

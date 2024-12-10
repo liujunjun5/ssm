@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/admin/category")
+@RequestMapping("/admin")
 public class AdminCategoryController extends ABaseController {
     @Autowired
     private CategoryInfoService categoryInfoService;
 
-    @RequestMapping("/loadCategory")
+    @RequestMapping("/category/loadCategory")
     public PaginationResultVO<CategoryInfo> loadCategory(Integer pageNo) {
         //判断页面值是否输入
         pageNo = ( pageNo==0 || pageNo==null ) ? 1 : pageNo;
@@ -34,7 +34,7 @@ public class AdminCategoryController extends ABaseController {
         return result;
     }
 
-    @RequestMapping("/saveCategory")
+    @RequestMapping("/category/saveCategory")
     public ResponseVO saveCategory(String pCategoryId,String  categoryCode,String categoryName,String categoryId,String icon,String background)throws BusinessException {
         //定义结果变量并初始化
         Integer result=0;
@@ -72,7 +72,7 @@ public class AdminCategoryController extends ABaseController {
 
 
     // 删除分类（根据分类ID）
-    @RequestMapping("/delCategory")
+    @RequestMapping("/category/delCategory")
     public ResponseVO deleteCategory(String categoryId) throws BusinessException{
         //try-catch捕获异常
         try{
@@ -90,7 +90,7 @@ public class AdminCategoryController extends ABaseController {
         }
     }
 
-    @RequestMapping("/updateCategory")
+    @RequestMapping("/category/updateCategory")
     public ResponseVO updateCategory(CategoryInfo categoryInfo) {
         Integer result = categoryInfoService.updateByCategoryId(categoryInfo, categoryInfo.getCategoryId());
         if (result > 0) {

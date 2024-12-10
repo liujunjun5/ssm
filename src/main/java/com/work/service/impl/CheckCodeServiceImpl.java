@@ -29,7 +29,6 @@ public class CheckCodeServiceImpl implements CheckCodeService {
     public boolean checkCode(String checkCodeKey, String checkCode) {
         //从Redis中读取验证码正确答案
         String finalCheckCodeKey = "checkCodeKey:"+checkCodeKey;
-//        String rightCheckCode = stringRedisTemplate.opsForValue().get(finalCheckCodeKey);
         String rightCheckCode = redisDataMapper.getValueByKey(finalCheckCodeKey);
         //校验
         return checkCode.equals(rightCheckCode);
@@ -45,9 +44,9 @@ public class CheckCodeServiceImpl implements CheckCodeService {
             //生成验证码
             ArithmeticCaptcha captcha = new ArithmeticCaptcha(100, 42);
             String code = captcha.text();
-            //存入Redis,验证码有效时间为20秒
+            //存入Redis,验证码有效时间为十分钟
             String checkCodeKey = UUID.randomUUID().toString();
-            redisDataMapper.setData("checkCodeKey:"+checkCodeKey,code,20);
+            redisDataMapper.setData("checkCodeKey:"+checkCodeKey,code,60*10);
             //返回验证码
             String checkCodeBase64 = captcha.toBase64();
             Map<String, String> theCheckCode = new HashMap<>();

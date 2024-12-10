@@ -19,9 +19,11 @@ public class RedisDataMapper {
         stringRedisTemplate.delete(key);
     }
 
-    public void setData(String key,String value,Integer time){
+    public void setData(String key,Object object,Integer time){
 
-        stringRedisTemplate.opsForValue().set(key, value,time, TimeUnit.SECONDS);
+        String json = JSON.toJSONString(object);
+
+        stringRedisTemplate.opsForValue().set(key, json,time, TimeUnit.SECONDS);
 
     }
     public void setData(String key,String value){
@@ -38,16 +40,22 @@ public class RedisDataMapper {
     public <T> T getByKey(String key, Class<T> clazz) {
 
         String json = stringRedisTemplate.opsForValue().get(key);
-
-        return JSON.parseObject(json,clazz);
+        if(json != null) {
+            return JSON.parseObject(json, clazz);
+        }
+        return null;
     }
 
-    public <T> void updateByKey(String key,T object){
+    public <T> boolean updateByKey(String key,T object){
 
         String json = stringRedisTemplate.opsForValue().get(key);
+        if(json == null){
+            return false;
+        }
+//        JSONObject jsonObject = JSON.parseObject(json);
+//        T obj = (T) jsonObject.toJavaObject(object.getClass()); // 注意这里使用了object.getClass()来获取类型
 
-        JSONObject jsonObject = JSON.parseObject(json);
-        T obj = (T) jsonObject.toJavaObject(object.getClass()); // 注意这里使用了object.getClass()来获取类型
+        T obj = (T) JSON.parseObject(json,object.getClass()); // 注意这里使用了object.getClass()来获取类型
 
         // 使用反射来复制非空属性
         copyNonNullProperties(object, obj);
@@ -55,6 +63,7 @@ public class RedisDataMapper {
         // 将修改后的对象序列化为JSON字符串并存回Redis
         json = JSON.toJSONString(obj);
         stringRedisTemplate.opsForValue().set(key, json);
+        return true;
 
     }
 

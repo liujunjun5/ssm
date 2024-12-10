@@ -48,10 +48,8 @@ public class ParamCheckUtils {
     }
 
 
-
-
     public static String areAllPropertiesEmpty(Object object) {
-        Msg = null;
+        Msg = "至少修改一项";
         Class<?> clazz = object.getClass();
         Field[] fields = clazz.getDeclaredFields();
 
@@ -60,23 +58,22 @@ public class ParamCheckUtils {
 
             try {
                 Object value = field.get(object);
-
                 // 检查是否为null或者String类型的属性是否为空字符串
                 if ( value instanceof String ){
                     if(StringUtils.hasLength((String) value)){
-                        return Msg;
+                      Msg = null;
                     }else{
                         field.set(object, null);
                     }
                 }else if(value != null) {
-                    return Msg;
+                    Msg = null;
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
                 // 你可以选择抛出异常或者记录日志，这里简单处理为打印堆栈跟踪
             }
         }
-        Msg = "至少修改一项";
+
         return Msg;
     }
 

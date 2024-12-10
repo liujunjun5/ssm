@@ -2,6 +2,7 @@ package com.work.entity.po;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -13,6 +14,7 @@ import java.util.Date;
  * @date:2024-12-02
  * @author: liujun
  */
+@NoArgsConstructor
 public class UserInfo implements Serializable {
 	/**
 	 * 用户id

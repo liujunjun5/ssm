@@ -25,7 +25,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/account")
-public class UserController extends ABaseController{
+public class UserAccountController extends ABaseController{
     @Autowired
     private UserInfoService userInfoService;
 
@@ -38,12 +38,9 @@ public class UserController extends ABaseController{
     @GetMapping("/checkCode")
     public ResponseVO checkCode() throws BusinessException {
 
-        try {
-            Map<String, String> theCheckCode = checkCodeService.setCheckCode();
-            return getSuccessResponseVO(theCheckCode);
-        } catch (BusinessException e) {
-            throw e;
-        }
+        Map<String, String> theCheckCode = checkCodeService.setCheckCode();
+        return getSuccessResponseVO(theCheckCode);
+
     }
 
     @PostMapping("/login")
@@ -64,12 +61,7 @@ public class UserController extends ABaseController{
         }
 
         //查询用户是否存在
-        String jwt = null;
-        try {
-            jwt = userInfoService.findOneByParam(new UserInfoQuery(email, DigestUtils.md5Hex(password)));
-        } catch (BusinessException e) {
-            throw e;
-        }
+        String jwt = userInfoService.findOneByParam(new UserInfoQuery(email, DigestUtils.md5Hex(password)));
 
         //下发Jwt令牌
         if(autoLogin == 1){
@@ -94,18 +86,14 @@ public class UserController extends ABaseController{
         if(ParamCheckUtils.checkRegisterParam(email,registerPassword,checkCode) != null){
             throw new BusinessException(600,ParamCheckUtils.checkRegisterParam(email,registerPassword,checkCode));
         }
+
         //验证码校验
         if(!checkCodeService.checkCode(checkCodeKey,checkCode)){
             throw new BusinessException(600,"验证码错误");
         }
 
         //注册
-        String jwt = null;
-        try {
-            jwt = userInfoService.register(new UserInfo(nickName,email,DigestUtils.md5Hex(registerPassword)));
-        } catch (BusinessException e) {
-            throw e;
-        }
+        String jwt = userInfoService.register(new UserInfo(nickName,email,DigestUtils.md5Hex(registerPassword)));
 
         //下发Jwt令牌
         if(autoLogin == 1){
@@ -132,8 +120,10 @@ public class UserController extends ABaseController{
     @GetMapping("/getUserInfo")
     public ResponseVO getUserInfo(HttpServletRequest request) throws BusinessException {
 
+        //获取rediskey
+        String redisUserInfoKey = CookieUtils.getCookie(request,Constants.TOKEN_KEY);
         //获取redis里的用户信息并封装成用户信息对象
-        ClaimsOfUserInfo claimsOfUserInfo = redisDataService.getByToken(request,Constants.TOKEN_KEY,"user:",ClaimsOfUserInfo.class);
+        ClaimsOfUserInfo claimsOfUserInfo = userInfoService.getByTokenOfUser(redisUserInfoKey);
 
         return getSuccessResponseVO(claimsOfUserInfo);
 
@@ -143,7 +133,7 @@ public class UserController extends ABaseController{
     @PostMapping("/updateUserInfo")
     public ResponseVO updateUserInfo(ClaimsOfUserInfo claimsOfUserInfo, HttpServletRequest request) throws BusinessException {
 
-        //参数全空检验
+        //参数空串空值检验
         if(ParamCheckUtils.areAllPropertiesEmpty(claimsOfUserInfo) != null){
             throw new BusinessException(600,ParamCheckUtils.areAllPropertiesEmpty(claimsOfUserInfo));
         }
@@ -154,7 +144,7 @@ public class UserController extends ABaseController{
             throw new BusinessException(901,"用户未登录，请求不合法");
         }
         //更新数据库和redis里的用户信息
-        userInfoService.updateByTokenOfUser(claimsOfUserInfo,"user:"+redisUserInfoKey);
+        userInfoService.updateByTokenOfUser(claimsOfUserInfo,redisUserInfoKey);
 
         return getSuccessResponseVO("更新成功");
 

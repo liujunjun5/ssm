@@ -24,10 +24,17 @@ public class Constants {
     public static final String REDIS_KEY_PREFIX = "web:";
     public static final String REDIS_KEY_CHECK_CODE = REDIS_KEY_PREFIX + "checkCode:";
 
-    /**
+    /**ljz
      * token键名
      */
     public static final String TOKEN_KEY = "Jwt_token";
+    public static final String ADMIN_KEY = "Jwt_admin";
+
+    /**ljz
+     * 管理员账号
+     */
+    public static final String ADMIN_ACCOUNT = "root";
+    public static final String ADMIN_PASSWORD = "666666";
 
 
 

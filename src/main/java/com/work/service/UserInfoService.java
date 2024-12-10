@@ -15,6 +15,17 @@ import java.util.List;
 public interface UserInfoService {
 
 
+	/**
+	 * ljz
+	 * 根据条件获取用户信息
+	 */
+	ClaimsOfUserInfo getByTokenOfUser(String redisUserInfoKey);
+
+
+	/**
+	 * ljz
+	 * 根据条件更新用户
+	 */
 	void updateByTokenOfUser(ClaimsOfUserInfo claimsOfUserInfo, String token);
 
 
@@ -26,7 +37,7 @@ public interface UserInfoService {
 
 	/**
 	 * ljz
-	 * 根据条件查询唯一用户
+	 * 根据条件注册用户
 	 */
 	String register(UserInfo bean) throws BusinessException;
 
@@ -107,5 +118,6 @@ public interface UserInfoService {
 	 * 根据NickName删除
 	 */
 	Integer deleteByNickName(String nickName);
+
 
 }

@@ -4,7 +4,7 @@ import com.work.exception.BusinessException;
 import com.work.mappers.RedisDataMapper;
 import com.work.service.RedisDataService;
 import com.work.utils.CookieUtils;
-import org.springframework.beans.factory.annotation.Autowired;;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,27 +52,5 @@ public class RedisDataServiceImpl implements RedisDataService {
         redisDataMapper.updateByKey(redisUserInfoKey,newData);
     }
 
-
-//    @Override
-//    public void deleteByKey(String key) {
-//        stringRedisTemplate.delete(key);
-//    }
-//
-//    @Override
-//    public <T> T getByKey(String key, Class<T> clazz) {
-//
-//        String json = stringRedisTemplate.opsForValue().get(key);
-//
-//        return JSON.parseObject(json,clazz);
-//    }
-
-//    @Override
-//    public Object getByKey(String key) {
-//
-//        String json = stringRedisTemplate.opsForValue().get(key);
-//        ClaimsOfUserInfo claimsOfRedis = JSON.parseObject(json,ClaimsOfUserInfo.class);
-//
-//        return claimsOfRedis;
-//    }
 
 }
