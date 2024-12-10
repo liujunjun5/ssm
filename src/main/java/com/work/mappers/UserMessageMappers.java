@@ -24,4 +24,9 @@ public interface UserMessageMappers<T, P> extends BaseMapper {
 	 */
 	Integer deleteByMessageId(@Param("messageId") Integer messageId);
 
+	/**
+	 * 查找最大messageId
+	 */
+	Integer findMaxMessageId();
+
 }

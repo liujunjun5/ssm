@@ -19,11 +19,18 @@
 		<!-- 创建时间 -->
 		<result column="create_time" property="createTime"/>
 
+		<!-- 其他字段映射 -->
+		<result column="sendUserAvatar" property="sendUserAvatar"/>
+		<result column="sendUserName" property="sendUserName"/>
+		<result column="productName" property="productName"/>
+		<result column="productCover" property="productCover"/>
+
 	</resultMap>
 
 	<!--通用查询列-->
+	<!--指明user_id来源为u表，即user_message-->
 	<sql id="base_column_list">
-		message_id,user_id,product_id,message_type,send_user_id,read_type,create_time
+		message_id,u.user_id,p.product_id,message_type,send_user_id,read_type,u.create_time
 	</sql>
 
 	<!--基础查询条件-->
@@ -33,10 +40,10 @@
 			and message_id = #{query.messageId}
 		</if>
 		<if test="query.userId!=null and query.userId!=''">
-			and user_id = #{query.userId}
+			and u.user_id = #{query.userId}
 		</if>
 		<if test="query.productId!=null and query.productId!=''">
-			and product_id = #{query.productId}
+			and p.product_id = #{query.productId}
 		</if>
 		<if test="query.messageType!=null">
 			and message_type = #{query.messageType}
@@ -48,26 +55,26 @@
 			and read_type = #{query.readType}
 		</if>
 		<if test="query.createTime!=null">
-			and create_time = #{query.createTime}
+			and u.create_time = #{query.createTime}
 		</if>
 	</sql>
 
 	<!--拓展的查询条件-->
 	<sql id="base_query_condition_extend">
 		<if test="query.userIdFuzzy!=null and query.userIdFuzzy!=''">
-			and user_id like concat ('%', #{query.userIdFuzzy}, '%')
+			and u.user_id like concat ('%', #{query.userIdFuzzy}, '%')
 		</if>
 		<if test="query.productIdFuzzy!=null and query.productIdFuzzy!=''">
-			and product_id like concat ('%', #{query.productIdFuzzy}, '%')
+			and p.product_id like concat ('%', #{query.productIdFuzzy}, '%')
 		</if>
 		<if test="query.sendUserIdFuzzy!=null and query.sendUserIdFuzzy!=''">
 			and send_user_id like concat ('%', #{query.sendUserIdFuzzy}, '%')
 		</if>
 		<if test="query.createTimeStart!=null and query.createTimeStart!=''">
-			<![CDATA[ and create_time>=str_to_date(#{query.createTimeStart}, '%Y-%m-%d') ]]>
+			<![CDATA[ and u.create_time>=str_to_date(#{query.createTimeStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.createTimeEnd!=null and query.createTimeEnd!=''">
-			<![CDATA[ and create_time< date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d')，interval -1 day) ]]>
+			<![CDATA[ and u.create_time< date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
 		</if>
 
 	</sql>
@@ -80,11 +87,20 @@
 		</where>
 	</sql>
 
+	<!--查询最大messageId-->
+	<select id="findMaxMessageId" resultType="java.lang.Integer">
+		SELECT MAX(message_id) FROM user_message
+	</select>
+
 	<!--查询列表-->
 	<select id = "selectList" resultMap="base_result_map">
 		SELECT
 		<include refid="base_column_list"/>
-		FROM user_message
+		    ,user.avatar AS sendUserAvatar,user.nick_name AS sendUserName,p.product_name AS productName,p.image_url AS productCover,
+		    u.user_id AS userId,p.product_id AS productId,u.create_time As createTime
+		FROM user_message u
+		LEFT JOIN product_info p ON p.product_id = u.product_id
+		LEFT JOIN user_info user ON user.user_id = u.user_id
 		<include refid="query_condition"/>
 		<if test="query.orderBy!=null">order by ${query.orderBy}</if>
 		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
@@ -92,13 +108,14 @@
 
 	<!--查询数量-->
 	<select id = "selectCount" resultType="java.lang.Integer">
-		SELECT COUNT(1) FROM user_message
+		SELECT COUNT(1) FROM user_message u
 		<include refid="query_condition"/>
 	</select>
 
 	<!--插入 （匹配有值的字段）-->
+	<!--注意：此处有改动，原文为keyProperty="bean.message_id，会导致数据回填时在UserMessage类中找不到对应属性与setter方法-->
 	<insert id = "insert" parameterType="com.work.entity.po.UserMessage">
-		<selectKey keyProperty="bean.message_id" resultType="Integer" order="AFTER">
+		<selectKey keyProperty="bean.messageId" resultType="Integer" order="AFTER">
 			SELECT LAST_INSERT_ID()
 		</selectKey>
 		INSERT INTO user_message

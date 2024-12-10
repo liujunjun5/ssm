@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Date;
 
 
@@ -90,17 +91,26 @@ public class FileUploadController extends ABaseController{
         if (!file.exists()) {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
         }
-        try (OutputStream out = response.getOutputStream(); FileInputStream in = new FileInputStream(file)) {
-            byte[] byteData = new byte[1024];
-            int len = 0;
-            while ((len = in.read(byteData)) != -1) {
-                out.write(byteData, 0, len);
-            }
-            out.flush();
+//        try (OutputStream out = response.getOutputStream(); FileInputStream in = new FileInputStream(file)) {
+//            byte[] byteData = new byte[1024];
+//            int len = 0;
+//            while ((len = in.read(byteData)) != -1) {
+//                out.write(byteData, 0, len);
+//            }
+//            out.flush();
+//        } catch (Exception e) {
+//            throw new BusinessException("读取文件异常", e);
+//        }
+        try (FileInputStream in = new FileInputStream(file)) {
+            // 读取文件到字节数组
+            byte[] fileContent = new byte[(int) file.length()];
+            in.read(fileContent);
+            // 将字节数组编码为Base64字符串
+            String base64Encoded = Base64.getEncoder().encodeToString(fileContent);
+            // 返回Base64编码的字符串
+            return base64Encoded;
         } catch (Exception e) {
             throw new BusinessException("读取文件异常", e);
         }
-        //获取文件路径
-        return filePath.toString();
     }
 }
