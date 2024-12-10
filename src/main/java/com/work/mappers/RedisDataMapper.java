@@ -19,11 +19,12 @@ public class RedisDataMapper {
         stringRedisTemplate.delete(key);
     }
 
-    public void setData(String key,Object object,Integer time){
+    public void setData(String key,Object value,Integer time){
 
-        String json = JSON.toJSONString(object);
-
-        stringRedisTemplate.opsForValue().set(key, json,time, TimeUnit.SECONDS);
+        if(value.getClass() != String.class){
+            stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(value),time, TimeUnit.SECONDS);
+        }
+        stringRedisTemplate.opsForValue().set(key, (String) value,time, TimeUnit.SECONDS);
 
     }
     public void setData(String key,String value){
