@@ -12,14 +12,18 @@ import com.work.config.AlipayConfig;
 import com.work.service.PayService;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 @Service
 public class PayServiceImpl implements PayService {
-    public String pay(String id, String price, String name){
+        public String pay(String id, String price, String name) throws UnsupportedEncodingException {
         //获得初始化的AlipayClient,负责调用支付宝接口
         AlipayClient alipayClient = new DefaultAlipayClient(AlipayConfig.gatewayUrl, AlipayConfig.app_id,
                 AlipayConfig.app_private_key, "json", AlipayConfig.charset,
                 AlipayConfig.alipay_public_key, AlipayConfig.sign_type);
         //设置请求参数
+
         AlipayTradePagePayRequest alipayRequest = getAlipayTradePagePayRequest(id, price, name);
         //请求
         AlipayTradePagePayResponse response = null;
@@ -39,7 +43,7 @@ public class PayServiceImpl implements PayService {
         return form;
     }
 
-    @Override
+
     public String query(String id) {
         //获得初始化的AlipayClient,负责调用支付宝接口
         AlipayClient alipayClient = new DefaultAlipayClient(AlipayConfig.gatewayUrl, AlipayConfig.app_id,
@@ -67,7 +71,7 @@ public class PayServiceImpl implements PayService {
         return body;
     }
 
-    private static AlipayTradePagePayRequest getAlipayTradePagePayRequest(String id, String price, String name) {
+    private static AlipayTradePagePayRequest getAlipayTradePagePayRequest(String id, String price, String name) throws UnsupportedEncodingException {
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
         //异步通知
         alipayRequest.setNotifyUrl(AlipayConfig.notify_url);
@@ -76,7 +80,7 @@ public class PayServiceImpl implements PayService {
         JSONObject bizContent = new JSONObject();
         bizContent.put("out_trade_no", id);//订单号
         bizContent.put("total_amount", price);//交易金额
-        bizContent.put("subject", name);//商品名
+        bizContent.put("subject", URLEncoder.encode(name, "UTF-8"));//商品名
         bizContent.put("product_code","FAST_INSTANT_TRADE_PAY");//固定配置
         alipayRequest.setBizContent(bizContent.toString());
         return alipayRequest;

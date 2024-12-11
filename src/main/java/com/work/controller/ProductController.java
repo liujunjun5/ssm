@@ -8,6 +8,7 @@ import com.work.entity.vo.PaginationResultVO;
 import com.work.entity.vo.ResponseVO;
 import com.work.exception.BusinessException;
 import com.work.service.*;
+import com.work.utils.CookieUtils;
 import com.work.utils.UuidTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -45,9 +48,23 @@ public class ProductController extends ABaseController {
     @Autowired
     private PayService payService;
 
-//    ClaimsOfUserInfo claimsOfUserInfo = userInfoService.getByToken(request,Constants.TOKEN_KEY,"user:",ClaimsOfUserInfo.class);
-//    String userId = claimsOfUserInfo.getUserId();
-    String userId = "牛俊";
+    private String userId;
+    //   String userId = "牛俊";
+
+    //获取用户信息
+    public Boolean getUserId(HttpServletRequest request) throws BusinessException {
+        if (userInfoService != null) {
+            ClaimsOfUserInfo claimsOfUserInfo = userInfoService.getByTokenOfUser(CookieUtils.getCookie(request,Constants.TOKEN_KEY));
+            if (claimsOfUserInfo.getUserId().isEmpty()){
+                throw new BusinessException("没有用户信息");
+            }else {
+                this.userId = claimsOfUserInfo.getUserId();
+                return true;
+            }
+        }
+        throw new BusinessException("获取用户服务不可用");
+    }
+
 
     //通过商品ID找上架的商品
     public Boolean getProductById(String productId) throws BusinessException {
@@ -58,7 +75,6 @@ public class ProductController extends ABaseController {
         productInfoQuery.setProductId(productId);
         productInfoQuery.setStatus(Constants.ONE);
         List<ProductInfo> listProduct = productInfoService.findListByParam(productInfoQuery);//将查询结果放入listProduct
-        listProduct.get(0).getProductUser();
         return !listProduct.isEmpty();//true则为找到该上架商品
     }
 
@@ -77,12 +93,12 @@ public class ProductController extends ABaseController {
     public ResponseVO addProduct(String productId, Integer categoryId, Integer stock,
                                  String productCover, Integer pCategoryId,
                                  @Size(min = 1, max = 10,message = "商品名大于1小于10")String productName,
-                                 @Size(max = 30, message = "描述不得超过30字")String description,
+                                 @Size(max = 30, message = "描述不得超过30字")String description,HttpServletRequest request,
                                  BigDecimal price, Integer brandId) throws BusinessException {
         if (pCategoryId==null || productName.isEmpty() || price==null || stock==null) {
             throw new BusinessException("必要信息不能为空");
         }
-        if(!getProductById(productId)){//找不到这个产品才可以添加
+        if(!getProductById(productId) && getUserId(request)){//找不到这个产品才可以添加
             ProductInfo productInfo = new ProductInfo();
             //TODO 从redis拿取当前用户的信息 获得userId写入表中
             productInfo.setProductId(productId);
@@ -162,8 +178,8 @@ public class ProductController extends ABaseController {
     }
 
     @GetMapping("/delProductByProductId")//删除商品模块
-    public ResponseVO delProductByProductId(String productId) throws BusinessException {
-        if(getProductById(productId)){//找到对应产品后执行删除
+    public ResponseVO delProductByProductId(String productId, HttpServletRequest request) throws BusinessException {
+        if(getProductById(productId) && getUserId(request)){//找到对应产品后执行删除
             //判断用户id是否相同
             if(getProductUser(productId)==userId){
             productInfoService.deleteByProductId(productId);
@@ -175,7 +191,7 @@ public class ProductController extends ABaseController {
         }
     }
     @PostMapping("/postProductByProductId")//修改商品信息模块
-    public ResponseVO updateProduct(String productId, String imageUrl,Integer categoryId,
+    public ResponseVO updateProduct(String productId, String imageUrl,Integer categoryId,HttpServletRequest request,
                                     Integer pCategoryId, @Size(min = 1, max = 10,message = "商品名大于1小于10")String productName,
                                     @Size(max = 30, message = "描述不得超过30字") String productDescription, BigDecimal price,
                                     Integer brandId, Integer stock, String tags) throws BusinessException {
@@ -184,7 +200,7 @@ public class ProductController extends ABaseController {
                 throw new BusinessException("必要信息不能为空");
             }
             //从redis拿取当前用户的信息 获得userId并验证(通过产品id找到对应用户id进行比对一致方可修改)
-            if (getProductUser(productId)==userId){
+            if (getUserId(request) && getProductUser(productId)==userId){
                 ProductInfo productInfo = new ProductInfo();
                 productInfo.setPCategoryId(pCategoryId);
                 productInfo.setCategoryId(categoryId);
@@ -206,11 +222,11 @@ public class ProductController extends ABaseController {
     }
 
     @PostMapping("/rate")//打分模块
-    public ResponseVO rate(String productId ,Integer rate) throws BusinessException {
-        if (getProductById(productId)) {//找到这个产品
-            if (rate>5) {
-                throw new BusinessException("评分为0到5的整数");
-            }
+    public ResponseVO rate(HttpServletRequest request,String productId ,Integer rate) throws BusinessException {
+        if (rate>5 || rate<0) {
+            throw new BusinessException("评分为0到5的整数");
+        }
+        if (getProductById(productId) && getUserId(request)) {//找到这个产品
             RateInfo rateInfo = new RateInfo();
             rateInfo.setProductId(productId);
             rateInfo.setRate(rate);
@@ -228,18 +244,19 @@ public class ProductController extends ABaseController {
     }
 
     @GetMapping("/findRate")//查询历史评分
-    public ResponseVO findRate() throws BusinessException {
+    public ResponseVO findRate(HttpServletRequest request) throws BusinessException {
+        if (getUserId(request)){
         List<RateInfo> rateList = rateInfoService.findRateList(userId);
-        System.out.println(rateList);
         if (!rateList.isEmpty()) {
             return getSuccessResponseVO(rateList);
+        }
         }
         throw new BusinessException("该用户没有历史评分");
     }
 
     @GetMapping("/delRate")//删除历史评分
-    public ResponseVO delRate(String productId) throws BusinessException {
-        if(getProductById(productId) && rateInfoService.findRate(productId,userId)!=null) {
+    public ResponseVO delRate(HttpServletRequest request, String productId) throws BusinessException {
+        if(getUserId(request) && getProductById(productId) && rateInfoService.findRate(productId,userId)!=null) {
             rateInfoService.deleteRate(productId,userId);
             updateProductInfo(productId);
             return getSuccessResponseVO("删除成功");
@@ -282,8 +299,8 @@ public class ProductController extends ABaseController {
 
     @GetMapping("/purseProduct")//购买模块
     @Transactional // 添加事务管理注解
-    public ResponseVO buy(String productId) throws BusinessException {
-        if (getProductById(productId)){
+    public String buy(HttpServletRequest request, String productId) throws BusinessException, UnsupportedEncodingException {
+        if(getUserId(request)) {
             ProductInfoQuery productInfoQuery = new ProductInfoQuery();
             productInfoQuery.setProductId(productId);
             List<ProductInfo> list = productInfoService.findListByParam(productInfoQuery);//将查询结果放入list
@@ -292,50 +309,45 @@ public class ProductController extends ABaseController {
             String productName = list.get(0).getProductName();
             Integer stock = list.get(0).getStock();//获取库存数
             Integer sale = list.get(0).getSalesCount();//获取销量
-            if (stock>0) {
+            if (stock > 0) {
                 UuidTool s = new UuidTool();//获取生成唯一编码对象
                 Order order = new Order();
                 String orderNo = s.generateUniqueOrderId();//生成唯一订单编号
-
-                //Todo 引入沙箱模拟支付
-                if (!creatPay(orderNo, String.valueOf(price), productName).isEmpty()) {
-
-                    ProductInfo productInfo = new ProductInfo();
-                    productInfo.setProductId(productId);
-                    productInfo.setStock(stock - Constants.ONE);//库存减一
-                    productInfo.setSalesCount(sale + Constants.ONE);//销量加一
-                    productInfoService.updateByProductId(productInfo, productId);//更新商品表
-                    order.setOrderNo(orderNo);//设置唯一订单编号
-                    order.setPrice(price);//交易金额
-                    order.setProductId(productId);//交易产品
-                    order.setPayTime(new Date());//交易时间
-                    //ToDo 拿userid
-                    order.setPayer(userId);//购买者
-                    order.setPayee(payee);//收款方
-                    orderService.add(order);//写入订单表
-                    return getSuccessResponseVO("支付成功");
-                }else throw new BusinessException("支付出错，购买失败");
-            }
-            else {
+                ProductInfo productInfo = new ProductInfo();
+                productInfo.setProductId(productId);
+                productInfo.setStock(stock - Constants.ONE);//库存减一
+                productInfo.setSalesCount(sale + Constants.ONE);//销量加一
+                productInfoService.updateByProductId(productInfo, productId);//更新商品表
+                order.setOrderNo(orderNo);//设置唯一订单编号
+                order.setPrice(price);//交易金额
+                order.setProductId(productId);//交易产品
+                order.setPayTime(new Date());//交易时间
+                order.setPayer(userId);//购买者
+                order.setPayee(payee);//收款方
+                orderService.add(order);//写入订单表
+                return creatPay(orderNo, String.valueOf(price), productName);
+            } else {
                 throw new BusinessException("库存不足购买失败");
             }
-        }
-        throw new BusinessException("不存在该商品");
+        } throw new BusinessException("用户验证失败请重新登录");
     }
 
 
 
     @PostMapping("pay")
-    public String creatPay(String id, String price, String name) {
+    public String creatPay(String id, String price, String name) throws UnsupportedEncodingException {
         return payService.pay(id,price,name);
     }
 
     @GetMapping("/findOrder")//查询订单模块
-    public ResponseVO findOrder() throws BusinessException {
-        List<Order> listOrder= orderService.findOrder(userId);//找到订单表
-        if (!listOrder.isEmpty()) {
-            return getSuccessResponseVO(listOrder);
-        }else throw new BusinessException("没有订单");
+    public ResponseVO findOrder(HttpServletRequest request) throws BusinessException {
+        if (getUserId(request)) {
+            List<Order> listOrder = orderService.findOrder(userId);//找到订单表
+            if (!listOrder.isEmpty()) {
+                return getSuccessResponseVO(listOrder);
+            } else throw new BusinessException("没有订单");
+        }
+        else throw new BusinessException("用户认证失败，请重新登陆");
     }
     @PostMapping("/notify")
     public void payNotify(String trade_no, String total_amount, String trade_status){

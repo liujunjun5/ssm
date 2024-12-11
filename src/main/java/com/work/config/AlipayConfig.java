@@ -19,7 +19,7 @@ public class AlipayConfig {
     // 签名方式
     public static String sign_type = "RSA2";
     // 字符编码格式
-    public static String charset = "UTf-8";
+    public static String charset = "utf-8";
     // 支付宝网关
     public static String gatewayUrl = "https://openapi-sandbox.dl.alipaydev.com/gateway.do";
 
