@@ -18,6 +18,8 @@
 		<result column="read_type" property="readType"/>
 		<!-- 创建时间 -->
 		<result column="create_time" property="createTime"/>
+		<!--消息内容-->
+		<result column="message_content" property="messageContent"/>
 
 		<!-- 其他字段映射 -->
 		<result column="sendUserAvatar" property="sendUserAvatar"/>
@@ -30,7 +32,7 @@
 	<!--通用查询列-->
 	<!--指明user_id来源为u表，即user_message-->
 	<sql id="base_column_list">
-		message_id,u.user_id,p.product_id,message_type,send_user_id,read_type,u.create_time
+		message_id,u.user_id,p.product_id,message_type,send_user_id,read_type,u.create_time,message_content
 	</sql>
 
 	<!--基础查询条件-->
@@ -57,6 +59,10 @@
 		<if test="query.createTime!=null">
 			and u.create_time = #{query.createTime}
 		</if>
+		<if test="query.messageContent!=null">
+			and message_content = #{query.messageContent}
+		</if>
+
 	</sql>
 
 	<!--拓展的查询条件-->
@@ -141,6 +147,9 @@
 			<if test="bean.createTime != null">
 				create_time,
 			</if>
+			<if test="bean.messageContent!=null">
+				message_content,
+			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="bean.messageId != null">
@@ -163,6 +172,9 @@
 			</if>
 			<if test="bean.createTime != null">
 				#{bean.createTime},
+			</if>
+			<if test="bean.messageContent!=null">
+				#{bean.messageContent}
 			</if>
 		</trim>
 	</insert>
@@ -192,6 +204,9 @@
 			<if test="bean.createTime != null">
 				create_time,
 			</if>
+			<if test="bean.messageContent!=null">
+				message_content,
+			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="bean.messageId != null">
@@ -215,6 +230,9 @@
 			<if test="bean.createTime != null">
 				#{bean.createTime},
 			</if>
+			<if test="bean.messageContent!=null">
+				#{bean.messageContent},
+			</if>
 		</trim>
 		on DUPLICATE key update
 		<trim prefix="" suffix="" suffixOverrides=",">
@@ -236,6 +254,9 @@
 			<if test="bean.createTime != null">
 				 create_time = VALUES(create_time)
 			</if>
+			<if test="bean.messageContent != null">
+				message_content = VALUES(message_content)
+			</if>
 		</trim>
 	</insert>
 
@@ -243,7 +264,7 @@
 	<insert id ="insertBatch" parameterType="com.work.entity.po.UserMessage">
 		INSERT INTO user_message(user_id,product_id,message_type,send_user_id,read_type,create_time) VALUES
 		<foreach collection="list" item="item" separator=",">
-			(#{item.userId},#{item.productId},#{item.messageType},#{item.sendUserId},#{item.readType},#{item.createTime})
+			(#{item.userId},#{item.productId},#{item.messageType},#{item.sendUserId},#{item.readType},#{item.createTime},#{item.messageContent})
 		</foreach>
 	</insert>
 
@@ -251,10 +272,10 @@
 	<insert id ="insertOrUpdateBatch" parameterType="com.work.entity.po.UserMessage">
 		INSERT INTO user_message(user_id,product_id,message_type,send_user_id,read_type,create_time) VALUES
 		<foreach collection="list" item="item" separator="," >
-			(#{item.userId},#{item.productId},#{item.messageType},#{item.sendUserId},#{item.readType},#{item.createTime})
+			(#{item.userId},#{item.productId},#{item.messageType},#{item.sendUserId},#{item.readType},#{item.createTime},#{item.messageContent})
 		</foreach>
 			on DUPLICATE key update
-			user_id= VALUES(user_id),product_id= VALUES(product_id),message_type= VALUES(message_type),send_user_id= VALUES(send_user_id),read_type= VALUES(read_type),create_time= VALUES(create_time)
+			user_id= VALUES(user_id),product_id= VALUES(product_id),message_type= VALUES(message_type),send_user_id= VALUES(send_user_id),read_type= VALUES(read_type),create_time= VALUES(create_time),message_content= VALUES(message_content)
 	</insert>
 
 	<!-- 根据MessageId查询 -->
@@ -286,6 +307,9 @@
 			</if>
 			<if test="bean.createTime != null">
 				create_time = #{bean.createTime},
+			</if>
+			<if test="bean.messageContent != null">
+				message_content = #{bean.messageContent},
 			</if>
 		</set>
 		where message_id=#{messageId}

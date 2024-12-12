@@ -78,12 +78,18 @@ public class UserMessageOperationAspect {
 
     private void saveSysMessage(RecordUserMessage recordUserMessage,Object[] arguments, Parameter[] parameters){
         String productId = null;
+        //设置审核结果
+        int check_res = -1;
+        //获取被拦截方法参数
         for (int i = 0; i < parameters.length; i++) {
             if ("arg0".equals(parameters[i].getName())) {
                 productId = (String) arguments[i];
             }
+            if("arg1".equals(parameters[i].getName())){
+                check_res = (int) arguments[i];
+            }
         }
-        UserMessage userMessage = getSysMessage(recordUserMessage,productId);
+        UserMessage userMessage = getSysMessage(recordUserMessage,productId,check_res);
         userMessageService.add(userMessage);
     }
 
@@ -93,6 +99,8 @@ public class UserMessageOperationAspect {
         //获取评论对象
         ProductComment comment = (ProductComment) responseVO.getData();
 
+        //设置消息内容
+        userMessage.setMessageContent("您有一条评论信息");
         //设置消息ID
         userMessage.setMessageId(userMessageService.findMaxMessageId()+1);
         //设置用户ID
@@ -111,11 +119,23 @@ public class UserMessageOperationAspect {
         return userMessage;
     }
 
-    private UserMessage getSysMessage(RecordUserMessage recordUserMessage, String productId){
+    private UserMessage getSysMessage(RecordUserMessage recordUserMessage, String productId, int check_res){
         //创建消息对象
         UserMessage userMessage = new UserMessage();
         ProductInfo productInfo = productInfoService.getByProductId(productId);
+        //创建消息内容字符串
+        String content = null;
+        //对审核结果判断，决定输出那一条内容
+        switch (check_res){
+            case -1:content = "您的"+productId+"号商品获得推荐";break;
+            case 0:content = "您的"+productId+"号商品已下架";break;
+            case 1:content = "您的"+productId+"号商品已上架";break;
+            case 2:content = "您的"+productId+"号商品审核未通过";break;
+            default:content = "您有一条系统消息";
+        }
 
+        //设置消息内容
+        userMessage.setMessageContent(content);
         //设置消息ID
         userMessage.setMessageId(userMessageService.findMaxMessageId()+1);
         //设置用户ID

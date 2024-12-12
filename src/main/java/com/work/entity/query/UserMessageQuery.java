@@ -49,6 +49,11 @@ public class UserMessageQuery extends BaseQuery{
 	 */
 	private Date createTime;
 
+	/**
+	 * 消息内容
+	 */
+	private String messageContent;
+
 	private String createTimeStart;
 
 	private String createTimeEnd;
@@ -149,4 +154,11 @@ public class UserMessageQuery extends BaseQuery{
 		return this.createTime;
 	}
 
+	public String getMessageContent() {
+		return messageContent;
+	}
+
+	public void setMessageContent(String messageContent) {
+		this.messageContent = messageContent;
+	}
 }
