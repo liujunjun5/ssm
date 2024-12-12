@@ -22,4 +22,9 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> findOrder(String payer) {
         return this.orderMappers.findOrder(payer);
     }
+
+
+    public boolean findRecord(String userId, String productId) {
+        return !this.orderMappers.findRecord(userId, productId).isEmpty();
+    }
 }

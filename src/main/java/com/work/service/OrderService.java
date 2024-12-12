@@ -8,4 +8,6 @@ public interface OrderService {
     Integer add(Order bean);
 
     List<Order> findOrder(String payer);
+
+    boolean findRecord(String userId, String productId);
 }

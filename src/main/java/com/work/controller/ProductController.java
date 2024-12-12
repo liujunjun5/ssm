@@ -90,7 +90,7 @@ public class ProductController extends ABaseController {
     }
 
     @PostMapping("/addProduct")//添加未审核商品模块
-    public ResponseVO addProduct(String productId, Integer categoryId, Integer stock,
+    public ResponseVO addProduct(Integer categoryId, Integer stock,
                                  String productCover, Integer pCategoryId,
                                  @Size(min = 1, max = 10,message = "商品名大于1小于10")String productName,
                                  @Size(max = 30, message = "描述不得超过30字")String description,HttpServletRequest request,
@@ -98,27 +98,32 @@ public class ProductController extends ABaseController {
         if (pCategoryId==null || productName.isEmpty() || price==null || stock==null) {
             throw new BusinessException("必要信息不能为空");
         }
-        if(!getProductById(productId) && getUserId(request)){//找不到这个产品才可以添加
+        if(getUserId(request)){//获取到用户信息才可以添加
             ProductInfo productInfo = new ProductInfo();
             //TODO 从redis拿取当前用户的信息 获得userId写入表中
-            productInfo.setProductId(productId);
-            productInfo.setProductUser(userId);
-            productInfo.setPCategoryId(pCategoryId);
-            productInfo.setCategoryId(categoryId);
-            productInfo.setImageUrl(productCover);
-            productInfo.setProductName(productName);
-            productInfo.setStock(stock);
-            productInfo.setBrandId(brandId);
-            productInfo.setTags("false");//默认不推荐
-            productInfo.setProductDescription(description);
-            productInfo.setPrice(price);
-            productInfo.setStatus(Constants.THREE);//新增商品状态统一设置为未审核
-            productInfo.setCreateTime(new Date());
-            productInfo.setLastUpdateTime(new Date());
-            productInfoService.add(productInfo);//执行添加
-            return getSuccessResponseVO("添加成功");
+            UuidTool s = new UuidTool();//获取生成唯一编码对象
+            String productId = s.generateUniqueProductId();
+            if (!getProductById(productId)) {//避免生成相同ID引起主键冲突
+                productInfo.setProductId(productId);
+                productInfo.setProductUser(userId);
+                productInfo.setPCategoryId(pCategoryId);
+                productInfo.setCategoryId(categoryId);
+                productInfo.setImageUrl(productCover);
+                productInfo.setProductName(productName);
+                productInfo.setStock(stock);
+                productInfo.setBrandId(brandId);
+                productInfo.setTags("false");//默认不推荐
+                productInfo.setProductDescription(description);
+                productInfo.setPrice(price);
+                productInfo.setStatus(Constants.THREE);//新增商品状态统一设置为未审核
+                productInfo.setCreateTime(new Date());
+                productInfo.setLastUpdateTime(new Date());
+                productInfoService.add(productInfo);//执行添加
+                return getSuccessResponseVO("添加成功");
+            }
+            else throw new BusinessException("商品ID生成重复，请重试");
         }else {
-            throw new BusinessException("已存在该商品ID，无法添加");
+            throw new BusinessException("没有用户信息，请登录");
         }
     }
 
@@ -223,24 +228,22 @@ public class ProductController extends ABaseController {
 
     @PostMapping("/rate")//打分模块
     public ResponseVO rate(HttpServletRequest request,String productId ,Integer rate) throws BusinessException {
-        if (rate>5 || rate<0) {
-            throw new BusinessException("评分为0到5的整数");
-        }
-        if (getProductById(productId) && getUserId(request)) {//找到这个产品
-            RateInfo rateInfo = new RateInfo();
-            rateInfo.setProductId(productId);
-            rateInfo.setRate(rate);
-            rateInfo.setUserId(userId);
-            if(rateInfoService.findRate(productId,rateInfo.getUserId())==null) {
-                rateInfoService.addRateByProductId(rateInfo);//根据用户ID和商品ID没找到评分记录就新增
-            }else {
-                rateInfoService.updateRateByProductId(productId, rateInfo.getUserId(), rate);//找到了就修改
-            }
-            updateProductInfo(productId);
-            return getSuccessResponseVO(rateInfo);
-        } else {
-            throw new BusinessException("不存在该商品");
-        }
+        if (rate>5 || rate<0) {throw new BusinessException("评分为0到5的整数");}
+        if (getProductById(productId) && getUserId(request)) {//找到这个产品,获取用户信息,
+            if (orderService.findRecord(userId,productId)) {// 存在购买记录
+                RateInfo rateInfo = new RateInfo();
+                rateInfo.setProductId(productId);
+                rateInfo.setRate(rate);
+                rateInfo.setUserId(userId);
+                if (rateInfoService.findRate(productId, rateInfo.getUserId()) == null) {
+                    rateInfoService.addRateByProductId(rateInfo);//根据用户ID和商品ID没找到评分记录就新增
+                } else {
+                    rateInfoService.updateRateByProductId(productId, rateInfo.getUserId(), rate);//找到了就修改
+                }
+                updateProductInfo(productId);
+                return getSuccessResponseVO(rateInfo);
+            }else throw new BusinessException("未购买，无法评分");
+        } else throw new BusinessException("不存在该商品");
     }
 
     @GetMapping("/findRate")//查询历史评分

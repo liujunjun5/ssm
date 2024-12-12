@@ -75,5 +75,11 @@ order_no,price,pay_time,payee,payer,product_id
         from `order`
         where payer=#{payer}
     </select>
+    <select id="findRecord" resultMap="oderMap">
+        select
+        <include refid="base_column_list"/>
+        from `order`
+        where payer=#{userId} and product_id=#{productId}
+    </select>
 
 </mapper>
