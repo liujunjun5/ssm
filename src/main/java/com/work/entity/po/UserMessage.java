@@ -55,6 +55,7 @@ public class UserMessage implements Serializable {
 	private String productCover;
 
 	private String sendUserAvatar;
+	private String messageContent;
 
 	public String getProductName() {
 		return productName;
@@ -144,8 +145,19 @@ public class UserMessage implements Serializable {
 		return this.createTime;
 	}
 
+	public String getMessageContent() {
+		return messageContent;
+	}
+
+	public void setMessageContent(String messageContent) {
+		this.messageContent = messageContent;
+	}
+
+
 	@Override
 	public String toString() {
 		return "消息ID自增:" + (messageId == null ? "null" : messageId) + ",用户ID:" + (userId == null ? "null" : userId) + ",主体ID:" + (productId == null ? "null" : productId) + ",消息类型:" + (messageType == null ? "null" : messageType) + ",发送人ID:" + (sendUserId == null ? "null" : sendUserId) + ",0:未读 1:已读:" + (readType == null ? "null" : readType) + ",创建时间:" + (createTime == null ? "null" : createTime);
 	}
+
+
 }

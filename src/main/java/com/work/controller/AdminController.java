@@ -56,6 +56,7 @@ public class AdminController extends ABaseController {
     }
 
     @GetMapping("/product/RecommendProduct")//推荐模块（可以不上架但依然推荐）
+    @RecordUserMessage(messageType = MessageTypeEnum.SYS)
     public ResponseVO recommend(String productId) throws BusinessException {
         if (productId.isEmpty()) {
             throw new BusinessException("商品ID不能为空");
