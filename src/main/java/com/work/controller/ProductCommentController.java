@@ -92,7 +92,7 @@ public class ProductCommentController extends ABaseController{
 
 
     @RequestMapping("loadComment")
-    public PaginationResultVO loadComment(String productId, Integer pageNo) throws BusinessException{
+    public ResponseVO loadComment(String productId, Integer pageNo) throws BusinessException{
         //创建商品对象，用以接收查找到的商品
         ProductInfo productInfo = productInfoService.getByProductId(productId);
         //判断商品是否经过审核，审核过的商品才能查看评论
@@ -138,7 +138,7 @@ public class ProductCommentController extends ABaseController{
             // 更新commentData中的评论列表
             commentData.setList(combinedCommentList);
         }
-        return commentData;
+        return getSuccessResponseVO(commentData);
     }
 
 

@@ -21,7 +21,7 @@ public class AdminCategoryController extends ABaseController {
     @RequestMapping("/category/loadCategory")
     public ResponseVO loadCategory(Integer pageNo) {
         //判断页面值是否输入
-        pageNo = ( pageNo==0 || pageNo==null ) ? 1 : pageNo;
+        pageNo = pageNo == null ? 1 : pageNo;
         // 创建查询对象，并设置分页参数
         CategoryInfoQuery query = new CategoryInfoQuery();
         //设置当前页面值与页面大小
