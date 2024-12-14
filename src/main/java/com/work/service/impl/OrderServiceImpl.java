@@ -27,4 +27,9 @@ public class OrderServiceImpl implements OrderService {
     public boolean findRecord(String userId, String productId) {
         return !this.orderMappers.findRecord(userId, productId).isEmpty();
     }
+
+    @Override
+    public List<Order> bossFindOrder(String payee) {
+        return this.orderMappers.bossFindOrder(payee);
+    }
 }

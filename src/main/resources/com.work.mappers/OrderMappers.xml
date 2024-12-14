@@ -18,11 +18,19 @@
         <result column="payee" property="payee"/>
         <!-- 商品ID -->
         <result column="product_id" property="productId"/>
+        <!-- 收货人 -->
+        <result column="consignee" property="consignee"/>
+        <!-- 收货地址 -->
+        <result column="address" property="address"/>
+        <!-- 电话号码 -->
+        <result column="phone" property="phone"/>
+        <!-- 购买数量 -->
+        <result column="amount" property="amount"/>
 
     </resultMap>
     <!--通用查询列-->
     <sql id="base_column_list">
-order_no,price,pay_time,payee,payer,product_id
+order_no,price,pay_time,payee,payer,product_id,consignee,address,phone,amount
     </sql>
 
 
@@ -47,6 +55,18 @@ order_no,price,pay_time,payee,payer,product_id
             <if test="bean.payee != null">
                 payee,
             </if>
+            <if test="bean.consignee != null">
+                consignee,
+            </if>
+            <if test="bean.address != null">
+                address,
+            </if>
+            <if test="bean.phone != null">
+                phone,
+            </if>
+            <if test="bean.amount != null">
+                amount,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="bean.orderNo != null">
@@ -67,14 +87,35 @@ order_no,price,pay_time,payee,payer,product_id
             <if test="bean.payee != null">
                 #{bean.payee},
             </if>
+            <if test="bean.consignee != null">
+                #{bean.consignee},
+            </if>
+            <if test="bean.address != null">
+                #{bean.address},
+            </if>
+            <if test="bean.phone != null">
+                #{bean.phone},
+            </if>
+            <if test="bean.amount != null">
+                #{bean.amount},
+            </if>
         </trim>
     </insert>
+
     <select id="findOrder" resultMap="oderMap">
         select
             <include refid="base_column_list"/>
         from `order`
         where payer=#{payer}
     </select>
+
+    <select id="bossFindOrder" resultMap="oderMap">
+        select
+        <include refid="base_column_list"/>
+        from `order`
+        where payee=#{payee}
+    </select>
+
     <select id="findRecord" resultMap="oderMap">
         select
         <include refid="base_column_list"/>

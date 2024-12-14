@@ -10,4 +10,6 @@ public interface OrderService {
     List<Order> findOrder(String payer);
 
     boolean findRecord(String userId, String productId);
+
+    List<Order> bossFindOrder(String payee);
 }

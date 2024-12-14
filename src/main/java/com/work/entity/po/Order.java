@@ -22,6 +22,47 @@ public class Order {
     private BigDecimal price;
     private String payer;
 
+    public Integer getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Integer amount) {
+        this.amount = amount;
+    }
+
+    private String consignee;
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    private String phone;
+    private Integer amount;
+
+
+
+    public String getConsignee() {
+        return consignee;
+    }
+
+    public void setConsignee(String consignee) {
+        this.consignee = consignee;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    private String address;
+
     public String getPayer() {
         return payer;
     }
@@ -67,15 +108,4 @@ public class Order {
         this.payTime = payTime;
     }
 
-    @Override
-    public String toString() {
-        return "Order{" +
-                ", productId='" + productId + '\'' +
-                ", orderNo='" + orderNo + '\'' +
-                ", price=" + price +
-                ", payer='" + payer + '\'' +
-                ", payee='" + payee + '\'' +
-                ", payTime=" + payTime +
-                '}';
-    }
 }

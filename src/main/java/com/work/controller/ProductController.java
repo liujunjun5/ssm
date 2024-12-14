@@ -100,7 +100,6 @@ public class ProductController extends ABaseController {
         }
         if(getUserId(request)){//获取到用户信息才可以添加
             ProductInfo productInfo = new ProductInfo();
-            //TODO 从redis拿取当前用户的信息 获得userId写入表中
             UuidTool s = new UuidTool();//获取生成唯一编码对象
             String productId = s.generateUniqueProductId();
             if (!getProductById(productId)) {//避免生成相同ID引起主键冲突
@@ -300,39 +299,47 @@ public class ProductController extends ABaseController {
         throw new BusinessException("分类ID不能为空");
     }
 
-    @GetMapping("/purseProduct")//购买模块
+    @PostMapping("/purseProduct")//购买模块
     @Transactional // 添加事务管理注解
-    public String buy(HttpServletRequest request, String productId) throws BusinessException, UnsupportedEncodingException {
-        if(getUserId(request)) {
-            ProductInfoQuery productInfoQuery = new ProductInfoQuery();
-            productInfoQuery.setProductId(productId);
-            List<ProductInfo> list = productInfoService.findListByParam(productInfoQuery);//将查询结果放入list
-            String payee = list.get(0).getProductUser();//获取商户
-            BigDecimal price = list.get(0).getPrice();//获取价格
-            String productName = list.get(0).getProductName();
-            Integer stock = list.get(0).getStock();//获取库存数
-            Integer sale = list.get(0).getSalesCount();//获取销量
-            if (stock > 0) {
-                UuidTool s = new UuidTool();//获取生成唯一编码对象
-                Order order = new Order();
-                String orderNo = s.generateUniqueOrderId();//生成唯一订单编号
-                ProductInfo productInfo = new ProductInfo();
-                productInfo.setProductId(productId);
-                productInfo.setStock(stock - Constants.ONE);//库存减一
-                productInfo.setSalesCount(sale + Constants.ONE);//销量加一
-                productInfoService.updateByProductId(productInfo, productId);//更新商品表
-                order.setOrderNo(orderNo);//设置唯一订单编号
-                order.setPrice(price);//交易金额
-                order.setProductId(productId);//交易产品
-                order.setPayTime(new Date());//交易时间
-                order.setPayer(userId);//购买者
-                order.setPayee(payee);//收款方
-                orderService.add(order);//写入订单表
-                return creatPay(orderNo, String.valueOf(price), productName);
-            } else {
-                throw new BusinessException("库存不足购买失败");
+    public String buy(HttpServletRequest request, String productId, String consignee, String address, String phone, Integer amount) throws BusinessException, UnsupportedEncodingException {
+        boolean isPhoneNumberValid = phone.matches("^\\d{11}$");//判断手机号格式
+        if (getProductById(productId)) {//找到商品才能购买
+            if (getUserId(request) && isPhoneNumberValid) {//获取用户信息
+                ProductInfoQuery productInfoQuery = new ProductInfoQuery();
+                productInfoQuery.setProductId(productId);
+                List<ProductInfo> list = productInfoService.findListByParam(productInfoQuery);//将查询结果放入list
+                String payee = list.get(0).getProductUser();//获取商户
+                BigDecimal price = list.get(0).getPrice();//获取价格
+                String productName = list.get(0).getProductName();
+                Integer stock = list.get(0).getStock();//获取库存数
+                Integer sale = list.get(0).getSalesCount();//获取销量
+                if (stock > amount) {//库存大于购买数量才能购买
+                    UuidTool s = new UuidTool();//获取生成唯一编码对象
+                    Order order = new Order();
+                    String orderNo = s.generateUniqueOrderId();//生成唯一订单编号
+                    ProductInfo productInfo = new ProductInfo();
+                    productInfo.setProductId(productId);
+                    productInfo.setStock(stock - amount);//库存减少
+                    productInfo.setSalesCount(sale + amount);//销量增加
+                    productInfoService.updateByProductId(productInfo, productId);//更新商品表
+                    order.setOrderNo(orderNo);//设置唯一订单编号
+                    BigDecimal bigDecimalFromAmount = new BigDecimal(amount.toString());// 将 Integer 转换为 BigDecimal
+                    BigDecimal totalAmount = price.multiply(bigDecimalFromAmount);// 使用 BigDecimal 的乘法方法得到总金额
+                    order.setPrice(totalAmount);//交易金额
+                    order.setProductId(productId);//交易产品
+                    order.setAmount(amount);//购买数量
+                    order.setAddress(address);//收货地址
+                    order.setConsignee(consignee);//收货人
+                    order.setPhone(phone);//购买人电话
+                    order.setPayTime(new Date());//交易时间
+                    order.setPayer(userId);//购买者
+                    order.setPayee(payee);//收款方
+                    orderService.add(order);//写入订单表
+                    return creatPay(orderNo, String.valueOf(totalAmount), productName);
+                } else throw new BusinessException("库存不足购买失败");
             }
-        } throw new BusinessException("用户验证失败请重新登录");
+            throw new BusinessException("用户验证失败请重新登录,或请检查手机号码格式");
+        } else throw new BusinessException("不存在该商品无法购买");
     }
 
 
@@ -342,7 +349,14 @@ public class ProductController extends ABaseController {
         return payService.pay(id,price,name);
     }
 
-    @GetMapping("/findOrder")//查询订单模块
+    @PostMapping("/notify")
+    public void payNotify(String trade_no, String total_amount, String trade_status){
+        System.out.println("支付宝订单编号：" + trade_no);
+        System.out.println("支付宝订单编号：" + total_amount);
+        System.out.println("支付宝订单编号：" + trade_status);
+    }
+
+    @GetMapping("/findOrder")//查询购买订单模块
     public ResponseVO findOrder(HttpServletRequest request) throws BusinessException {
         if (getUserId(request)) {
             List<Order> listOrder = orderService.findOrder(userId);//找到订单表
@@ -352,13 +366,17 @@ public class ProductController extends ABaseController {
         }
         else throw new BusinessException("用户认证失败，请重新登陆");
     }
-    @PostMapping("/notify")
-    public void payNotify(String trade_no, String total_amount, String trade_status){
-        System.out.println("支付宝订单编号：" + trade_no);
-        System.out.println("支付宝订单编号：" + total_amount);
-        System.out.println("支付宝订单编号：" + trade_status);
-    }
 
+    @GetMapping("/bossFindOrder")//查询销售订单模块
+    public ResponseVO bossFindOrder(HttpServletRequest request) throws BusinessException {
+        if (getUserId(request)) {
+            List<Order> listOrder = orderService.bossFindOrder(userId);//找到订单表
+            if (!listOrder.isEmpty()) {
+                return getSuccessResponseVO(listOrder);
+            } else throw new BusinessException("没有订单");
+        }
+        else throw new BusinessException("用户认证失败，请重新登陆");
+    }
     @RequestMapping("/searchProduct")
     public ResponseVO searchProduct(@NotEmpty String productName, Integer pageNo) throws BusinessException {
         pageNo = pageNo == null ? 1 : pageNo;
