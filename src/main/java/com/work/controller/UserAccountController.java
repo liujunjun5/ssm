@@ -131,7 +131,10 @@ public class UserAccountController extends ABaseController{
 
 
     @PostMapping("/updateUserInfo")
-    public ResponseVO updateUserInfo(ClaimsOfUserInfo claimsOfUserInfo, HttpServletRequest request) throws BusinessException {
+    public ResponseVO updateUserInfo(ClaimsOfUserInfo claimsOfUserInfo,
+                                     @RequestParam(required = false) String oldPassword,
+                                     @RequestParam(required = false) String newPassword,
+                                     HttpServletRequest request) throws BusinessException {
 
         //参数空串空值检验
         if(ParamCheckUtils.areAllPropertiesEmpty(claimsOfUserInfo) != null){
@@ -145,6 +148,8 @@ public class UserAccountController extends ABaseController{
         }
         //更新数据库和redis里的用户信息
         userInfoService.updateByTokenOfUser(claimsOfUserInfo,redisUserInfoKey);
+        //密码更改
+        userInfoService.updatePasswordByToken(oldPassword,newPassword,redisUserInfoKey);
 
         return getSuccessResponseVO("更新成功");
 

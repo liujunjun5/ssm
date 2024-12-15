@@ -19,7 +19,6 @@ import java.util.UUID;
 public class CheckCodeServiceImpl implements CheckCodeService {
 
     @Autowired
-//    @Qualifier("RedisDataMapper")
     private RedisDataMapper redisDataMapper;
 
     /**ljz

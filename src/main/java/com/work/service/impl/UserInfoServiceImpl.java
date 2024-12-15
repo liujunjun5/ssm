@@ -17,6 +17,7 @@ import com.work.utils.JwtUtils;
 import com.work.utils.StringTools;
 
 import io.jsonwebtoken.Claims;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -26,6 +27,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -245,13 +248,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 		return newClaimsOfUserInfo;
 	}
 
-
 	/**ljz
 	 * 更新两个数据库中用户数据
 	 */
 	@Override
 	public void updateByTokenOfUser(ClaimsOfUserInfo claimsOfUserInfo, String key) {
-
+		//获取userID
 		Claims claims =JwtUtils.parseJWT(key);
 		String userId = (String) claims.get("userId");
 
@@ -263,6 +265,37 @@ public class UserInfoServiceImpl implements UserInfoService {
 			ClaimsOfUserInfo newClaimsOfUserInfo = new ClaimsOfUserInfo(userInfo.getUserId(), userInfo.getNickName(), userInfo.getAvatar(), userInfo.getSex(), userInfo.getBirthday(), userInfo.getPersonIntroduction(), userInfo.getNoticeInfo());
 			redisDataMapper.setData("user:" + key, newClaimsOfUserInfo, 60 * 60 * 3);
 		}
+	}
+
+	/**ljz
+	 * 更新数据库中用户密码
+	 */
+	@Override
+	public void updatePasswordByToken(String oldPassword, String newPassword, String key) throws BusinessException {
+		//获取userID
+		Claims claims =JwtUtils.parseJWT(key);
+		String userId = (String) claims.get("userId");
+		//检测新密码是否为空，为空，默认用户不更改密码
+		if(!StringUtils.hasLength(newPassword)){
+			return;
+		}
+		//原密码检验
+		if(!StringUtils.hasLength(oldPassword)){
+			throw new BusinessException(600,"请输入原密码");
+		}
+		if(!userInfoMappers.selectByUserId(userId).getPassword().equals(DigestUtils.md5Hex(oldPassword))){
+			throw new BusinessException(600,"原密码错误");
+		}
+		//新密码格式检验
+		Pattern patPassword = Pattern.compile(Constants.REGEX_PASSWORD);
+		Matcher matPassword = patPassword.matcher(newPassword);
+		if(!matPassword.matches()){
+			throw new BusinessException(600,"新密码格式错误");
+		}
+		//更改密码
+		UserInfo userInfo = new UserInfo();
+		userInfo.setPassword(DigestUtils.md5Hex(newPassword));
+		userInfoMappers.updateByUserId(userInfo,userId);
 	}
 
 }

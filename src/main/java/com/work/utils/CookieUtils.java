@@ -57,6 +57,9 @@ public class CookieUtils {
 //        return value;
     }
 
+    /**ljz
+     * 根据键名获取cookie
+     */
     public static String getCookie(HttpServletRequest request, String key) {
         String value = null;
         Cookie[] cookies = request.getCookies();

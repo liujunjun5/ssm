@@ -28,6 +28,12 @@ public interface UserInfoService {
 	 */
 	void updateByTokenOfUser(ClaimsOfUserInfo claimsOfUserInfo, String token);
 
+	/**
+	 * ljz
+	 * 根据条件更改用户密码
+	 */
+	void updatePasswordByToken(String oldPassword, String newPassword, String redisUserInfoKey) throws BusinessException;
+
 
 	/**
 	 * ljz
