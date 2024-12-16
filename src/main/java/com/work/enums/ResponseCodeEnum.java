@@ -7,7 +7,8 @@ public enum ResponseCodeEnum {
     CODE_601(601, "信息已经存在"),
     CODE_602(602,"信息错误"),
     CODE_500(500, "服务器返回错误，联系管理员"),
-    CODE_901(901, "未登录或登陆超时，请重新登录");
+    CODE_901(901, "未登录或登陆超时，请重新登录"),
+    CODE_902(902, "权限错误");
 
     private Integer code;
     private String msg;

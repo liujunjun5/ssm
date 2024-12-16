@@ -60,14 +60,19 @@
     </mvc:cors>
 
     <!-- 拦截器 -->
-<!--    <mvc:interceptors>-->
-<!--        <mvc:interceptor>-->
-<!--            <mvc:mapping path="/*"/>-->
-<!--            <bean class="com.work.interceptor.LoginInterceptor"/>-->
-<!--        </mvc:interceptor>-->
-<!--        <mvc:interceptor>-->
-<!--            <mvc:mapping path="/*"/>-->
-<!--            <bean class="com.work.interceptor.OtherInterceptor"/>-->
-<!--        </mvc:interceptor>-->
-<!--    </mvc:interceptors>-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/**/checkCode"/>
+            <mvc:exclude-mapping path="/**/login"/>
+            <mvc:exclude-mapping path="/account/register"/>
+            <bean class="com.work.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <mvc:mapping path="/admin/**"/>
+            <mvc:exclude-mapping path="/**/checkCode"/>
+            <mvc:exclude-mapping path="/**/login"/>
+            <bean class="com.work.interceptor.ManagementInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
 </beans>

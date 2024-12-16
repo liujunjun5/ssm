@@ -25,34 +25,26 @@ public class AdminServiceImpl implements AdminService {
 
         if(administrator.getAccount().equals(Constants.ADMIN_ACCOUNT)&&administrator.getPassword().equals(Constants.ADMIN_PASSWORD)) {
 
-//            //管理员验证成功，转json数据
-//            String json = JSON.toJSONString(administrator);
             //对管理员信息做加密操作，生成Jwt令牌
             administrator.setAccount(DigestUtils.md5Hex(administrator.getAccount()));
             administrator.setPassword(DigestUtils.md5Hex(administrator.getPassword()));
             String jwt = JwtUtils.generateJwt(administrator);
-//            //将管理员信息存入Redis
-//            redisDataMapper.setData("user:" + jwt, json);
             return jwt;
         }else {
-            throw new BusinessException("管理员验证失败");
+            throw new BusinessException(600,"管理员验证失败");
         }
-
     }
 
     @Override
     public void setUserStatus(String userId, Integer status) throws BusinessException {
 
-        try {
-            //创建更新条件对象
-            UserInfo userInfo = new UserInfo();
-            userInfo.setStatus(status);
-            //更新
-            userInfoMappers.updateByUserId(userInfo,userId);
-        }catch (Exception e){
+        //创建更新条件对象
+        UserInfo userInfo = new UserInfo();
+        userInfo.setStatus(status);
+        //更新
+        if(userInfoMappers.updateByUserId(userInfo,userId) == 0){
             //未找到用户报错
-            throw new BusinessException("用户不存在");
+            throw new BusinessException(602,"用户不存在");
         }
-
     }
 }

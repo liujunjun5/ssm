@@ -14,9 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 
 public class ABaseController {
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
     protected static final String STATUC_SUCCESS = "success";
 
     protected static final String STATUC_ERROR = "error";
