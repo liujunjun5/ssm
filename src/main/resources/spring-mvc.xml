@@ -66,6 +66,11 @@
             <mvc:exclude-mapping path="/**/checkCode"/>
             <mvc:exclude-mapping path="/**/login"/>
             <mvc:exclude-mapping path="/account/register"/>
+            <mvc:exclude-mapping path="/product/loadProducts"/>
+            <mvc:exclude-mapping path="/product/loadRecommendProduct"/>
+            <mvc:exclude-mapping path="/product/getProductByProductId"/>
+            <mvc:exclude-mapping path="/product/loadProductsByCid"/>
+            <mvc:exclude-mapping path="/product/searchProduct"/>
             <bean class="com.work.interceptor.LoginInterceptor"/>
         </mvc:interceptor>
         <mvc:interceptor>
