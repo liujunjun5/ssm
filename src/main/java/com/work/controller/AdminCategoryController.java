@@ -37,7 +37,7 @@ public class AdminCategoryController extends ABaseController {
     @RequestMapping("/category/saveCategory")
     public ResponseVO saveCategory(String pCategoryId,String  categoryCode,String categoryName,String categoryId,String icon,String background)throws BusinessException {
         //定义结果变量并初始化
-        Integer result=0;
+        Integer result;
         //创建CategoryInfo对象，用于接收前端传来的参数
         CategoryInfo categoryInfo = new CategoryInfo();
         //try-catch捕获异常
@@ -66,7 +66,8 @@ public class AdminCategoryController extends ABaseController {
         if (result > 0) {//判断是否保存成功，基于此次判断返回结果
             return getSuccessResponseVO(categoryInfo.toString());
         } else {
-            return getServerErrorResponseVO(categoryInfo.toString());
+            throw new BusinessException("保存失败");
+//            return getServerErrorResponseVO(categoryInfo.toString());
         }
     }
 
@@ -81,7 +82,8 @@ public class AdminCategoryController extends ABaseController {
             if (result > 0) {//判断操作是否成功
                 return getSuccessResponseVO(categoryId);
             } else {
-                return getServerErrorResponseVO(categoryId);
+                throw new BusinessException("删除失败");
+//                return getServerErrorResponseVO(categoryId);
             }
         }catch (NumberFormatException e){//数据转换错误
             throw new BusinessException("传入的ID无效",e);
@@ -91,12 +93,13 @@ public class AdminCategoryController extends ABaseController {
     }
 
     @RequestMapping("/category/updateCategory")
-    public ResponseVO updateCategory(CategoryInfo categoryInfo) {
+    public ResponseVO updateCategory(CategoryInfo categoryInfo) throws BusinessException {
         Integer result = categoryInfoService.updateByCategoryId(categoryInfo, categoryInfo.getCategoryId());
         if (result > 0) {
             return getSuccessResponseVO(categoryInfo);
         } else {
-            return getServerErrorResponseVO(categoryInfo);
+            throw new BusinessException("更新失败");
+//            return getServerErrorResponseVO(categoryInfo);
         }
     }
 }
