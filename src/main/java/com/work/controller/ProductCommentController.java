@@ -1,6 +1,5 @@
 package com.work.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.work.annotation.RecordUserMessage;
 import com.work.entity.constants.Constants;
 import com.work.entity.po.ClaimsOfUserInfo;
@@ -13,15 +12,12 @@ import com.work.enums.MessageTypeEnum;
 import com.work.exception.BusinessException;
 import com.work.service.ProductCommentService;
 import com.work.service.ProductInfoService;
-
 import com.work.service.UserInfoService;
 import com.work.utils.CookieUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
@@ -170,18 +166,13 @@ public class ProductCommentController extends ABaseController{
 
     @RequestMapping("/userDelComment")
     public ResponseVO userDelComment(Integer commentId) throws BusinessException {
-        try{
-            //进行删除操作，并返回影响行数于结果变量中
+        //进行删除操作，并返回影响行数于结果变量中
             Integer result = productCommentService.deleteByCommentId(commentId);
             if (result > 0) {//判断操作是否成功
                 return getSuccessResponseVO(commentId);
             } else {
-                return getServerErrorResponseVO(commentId);
+                throw new BusinessException("删除评论数据出错");
             }
-        }catch (Exception e){//其他错误
-            throw new BusinessException("删除评论数据出错",e);
-        }
     }
-
 }
 
