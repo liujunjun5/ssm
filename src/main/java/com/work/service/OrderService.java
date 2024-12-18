@@ -5,7 +5,7 @@ import com.work.entity.po.Order;
 import java.util.List;
 
 public interface OrderService {
-    Integer add(Order bean);
+    Boolean add(List<Order> orders);
 
     List<Order> findOrder(String payer);
 

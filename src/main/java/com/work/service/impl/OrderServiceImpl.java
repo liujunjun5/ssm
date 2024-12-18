@@ -15,8 +15,14 @@ public class OrderServiceImpl implements OrderService {
     private OrderMappers<Order> orderMappers;
 
 
-    public Integer add(Order bean) {
-        return this.orderMappers.add(bean);
+    public Boolean add(List<Order> orders) {
+        for (Order order : orders) {
+            // 在这里可以进行一些验证，比如订单是否为null等
+            if (order != null) {
+                this.orderMappers.add(order);
+            }
+        }
+        return true;
     }
 
     public List<Order> findOrder(String payer) {
