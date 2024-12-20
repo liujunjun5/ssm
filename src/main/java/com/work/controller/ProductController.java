@@ -130,6 +130,22 @@ public class ProductController extends ABaseController {
         productInfoQuery.setStatus(Constants.ONE);
         return getSuccessResponseVO(productInfoService.findByPage(productInfoQuery));
     }
+
+    @GetMapping("/loadSelfProducts")//分页查找用户自己商品模块
+    public ResponseVO loadSelfProducts(Integer pageNo, HttpServletRequest request, Integer status) throws BusinessException {
+        if (status==null || status<0 || status>3) {
+            throw new BusinessException("状态只能为0,1,2,3");
+        }
+        if(getUserId(request)){//获取到用户信息才可以添加
+        pageNo = pageNo == null ? 1 : pageNo;
+        ProductInfoQuery productInfoQuery = new ProductInfoQuery();
+        productInfoQuery.setPageNo(pageNo);
+        productInfoQuery.setProductUser(userId);
+        productInfoQuery.setStatus(status);
+        return getSuccessResponseVO(productInfoService.findByPage(productInfoQuery));}
+        else throw new BusinessException("没有用户信息");
+    }
+
     @GetMapping("/loadRecommendProduct")//分页查询推荐且上架的商品模块
     public ResponseVO loadRecommendProduct(Integer pageNo){
         pageNo = pageNo == null ? 1 : pageNo;

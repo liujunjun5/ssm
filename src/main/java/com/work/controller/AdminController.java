@@ -86,7 +86,10 @@ public class AdminController extends ABaseController {
     }
 
     @GetMapping("/givenProducts")//分页查找指定状态商品模块
-    public ResponseVO loadProducts(Integer pageNo, Integer status){
+    public ResponseVO loadProducts(Integer pageNo, Integer status) throws BusinessException {
+        if (status==null || status<0 || status>3) {
+            throw new BusinessException("状态只能为0,1,2,3");
+        }
         pageNo = pageNo == null ? 1 : pageNo;
         ProductInfoQuery productInfoQuery = new ProductInfoQuery();
         productInfoQuery.setPageNo(pageNo);
