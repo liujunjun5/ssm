@@ -2,6 +2,7 @@ package com.work.controller;
 
 
 import com.work.annotation.RecordUserMessage;
+import com.work.entity.constants.Constants;
 import com.work.entity.po.BrandInfo;
 import com.work.entity.po.ProductInfo;
 import com.work.entity.query.BrandInfoQuery;
@@ -50,9 +51,7 @@ public class AdminController extends ABaseController {
             productInfo.setStatus(status);
             productInfoService.updateByProductId(productInfo,productId);//修改上架状态
             return getSuccessResponseVO("修改成功");
-        }else {
-            throw new BusinessException("不存在该商品ID，无法审核");
-        }
+        }else {throw new BusinessException("不存在该商品ID，无法审核");}
     }
 
     @GetMapping("/product/RecommendProduct")//推荐模块（可以不上架但依然推荐）
@@ -84,6 +83,15 @@ public class AdminController extends ABaseController {
         }else {
             throw new BusinessException("不存在该商品ID，无法取消推荐");
         }
+    }
+
+    @GetMapping("/givenProducts")//分页查找指定状态商品模块
+    public ResponseVO loadProducts(Integer pageNo, Integer status){
+        pageNo = pageNo == null ? 1 : pageNo;
+        ProductInfoQuery productInfoQuery = new ProductInfoQuery();
+        productInfoQuery.setPageNo(pageNo);
+        productInfoQuery.setStatus(status);
+        return getSuccessResponseVO(productInfoService.findByPage(productInfoQuery));
     }
 
     @PostMapping("/brand/saveBrand")//增加品牌模块
