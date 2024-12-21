@@ -126,7 +126,6 @@ public class UserAccountController extends ABaseController{
         ClaimsOfUserInfo claimsOfUserInfo = userInfoService.getByTokenOfUser(redisUserInfoKey);
 
         return getSuccessResponseVO(claimsOfUserInfo);
-
     }
 
 
@@ -152,7 +151,6 @@ public class UserAccountController extends ABaseController{
         userInfoService.updatePasswordByToken(oldPassword,newPassword,redisUserInfoKey);
 
         return getSuccessResponseVO("更新成功");
-
     }
 
 }

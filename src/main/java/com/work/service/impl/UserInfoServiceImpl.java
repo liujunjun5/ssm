@@ -183,6 +183,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 		if(userInfo.getStatus() == 0){
 			throw new BusinessException(602,"账号被封禁");
 		}
+		//登录成功更新最后登录时间
+		userInfo.setLastLoginTime(new Date());
 		//登录成功封装要展示的用户信息
 		ClaimsOfUserInfo claimsOfUserInfo = new ClaimsOfUserInfo(userInfo.getUserId(),userInfo.getNickName(),userInfo.getAvatar(),userInfo.getSex(),userInfo.getBirthday(),userInfo.getPersonIntroduction(),userInfo.getNoticeInfo());
 
@@ -210,6 +212,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 		//创建新用户
 		userInfo.setUserId(StringTools.getRandomNumber(Constants.LENGTH_10));
 		userInfo.setJoinTime(new Date());
+		userInfo.setLastLoginTime(new Date());
 		userInfo.setCurrentCoinCount(BigDecimal.ZERO);
 		//新账号录入数据库
 		this.userInfoMappers.insert(userInfo);

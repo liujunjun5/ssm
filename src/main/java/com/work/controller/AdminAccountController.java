@@ -2,10 +2,12 @@ package com.work.controller;
 
 import com.work.entity.constants.Constants;
 import com.work.entity.po.Administrator;
+import com.work.entity.query.UserInfoQuery;
 import com.work.entity.vo.ResponseVO;
 import com.work.exception.BusinessException;
 import com.work.service.AdminService;
 import com.work.service.CheckCodeService;
+import com.work.service.UserInfoService;
 import com.work.utils.CookieUtils;
 import com.work.utils.ParamCheckUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,9 @@ public class AdminAccountController extends ABaseController{
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private UserInfoService userInfoService;
 
     @GetMapping("/checkCode")
     public ResponseVO checkCode() throws BusinessException {
@@ -73,10 +78,21 @@ public class AdminAccountController extends ABaseController{
 
     @GetMapping("/userStatus")
     public ResponseVO setUserStatus(String userId,Integer status) throws BusinessException {
-
+        //对用户状态做管理操作
         adminService.setUserStatus(userId,status);
 
         return getSuccessResponseVO("操作成功");
     }
 
+    @GetMapping("/loadUserInfo")
+    public ResponseVO getAllUserInfo(Integer pageSize, Integer pageNo, String orderBy, String direction){
+
+        UserInfoQuery userInfoQuery = new UserInfoQuery();
+        userInfoQuery.setPageSize(pageSize);
+        userInfoQuery.setPageNo(pageNo);
+        userInfoQuery.setOrderBy(orderBy);
+        userInfoQuery.setDirection(direction);
+
+        return getSuccessResponseVO(userInfoService.findByPage(userInfoQuery));
+    }
 }

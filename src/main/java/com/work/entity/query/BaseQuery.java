@@ -5,6 +5,7 @@ public class BaseQuery {
     private Integer pageNo;
     private Integer pageSize;
     private String orderBy;
+    private String direction;
 
     public SimplePage getSimplePage() {
         return simplePage;
@@ -37,4 +38,8 @@ public class BaseQuery {
     public void setOrderBy(String orderBy) {
         this.orderBy = orderBy;
     }
+
+    public String getDirection() {return direction;}
+
+    public void setDirection(String direction) {this.direction = direction;}
 }

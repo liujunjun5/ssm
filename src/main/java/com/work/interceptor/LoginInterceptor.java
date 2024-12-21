@@ -20,7 +20,6 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        System.out.println("这是我配置的拦截器...............................................................................................");
         String jwtInToken = CookieUtils.getCookie(request, Constants.TOKEN_KEY) == null?CookieUtils.getCookie(request, Constants.ADMIN_KEY):CookieUtils.getCookie(request, Constants.TOKEN_KEY);
 
         try {
@@ -39,13 +38,4 @@ public class LoginInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        log.info("登录拦截器2");
-    }
-
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        log.info("登录拦截器3");
-    }
 }
